@@ -1,9 +1,9 @@
 import copy
 
-from shellforgepy_meges_workshop.designs.headmask.process_data_06_high_speed import (
+from mege_3devops.process_data.mender3.process_data_06_high_speed import (
     PROCESS_DATA_06_HS_BASE,
 )
-from shellforgepy_meges_workshop.designs.headmask.process_data_utils import (
+from mege_3devops.process_data.mender3.process_data_utils import (
     augment,
     augment_with_bed_temperatures,
 )
