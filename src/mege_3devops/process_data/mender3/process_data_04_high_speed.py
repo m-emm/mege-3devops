@@ -260,6 +260,92 @@ PROCESS_DATA_PETG_04_HS = augment_with_bed_temperatures(
 )
 
 
+##### PETG-CF 0.4 mm High Speed Profile #####
+# PETG-CF: higher viscosity, lower ooze/stringing, stiffer & more brittle
+# Strategy vs PETG: hotter, slower, slightly fatter lines, gentler cooling, softer retraction
+
+petgcf_04_hs_layer_height_factor = 0.72  # ~0.26 mm - keep flow channels generous
+petgcf_04_hs_quality_speed = 70  # slower outer walls for layer bonding
+petgcf_04_hs_inner_speed = 130  # ~30% slower than PETG to respect flow limits
+
+petgcf_04_hs_quality_acceleration = 3500
+petgcf_04_hs_inner_acceleration = 6000
+
+petgcf_04_hs_quality_jerk = 5
+petgcf_04_hs_inner_jerk = 8
+
+
+PROCESS_DATA_PETGCF_04_HS = augment(
+    PROCESS_DATA_04_HS_BASE,
+    layer_height_factor=petgcf_04_hs_layer_height_factor,
+    quality_speed=petgcf_04_hs_quality_speed,
+    inner_speed=petgcf_04_hs_inner_speed,
+    quality_acceleration=petgcf_04_hs_quality_acceleration,
+    inner_acceleration=petgcf_04_hs_inner_acceleration,
+    quality_jerk=petgcf_04_hs_quality_jerk,
+    inner_jerk=petgcf_04_hs_inner_jerk,
+)
+
+PROCESS_DATA_PETGCF_04_HS["filament"] = "FilamentPETGCF"
+
+# Bed temperatures: CF shrinks a bit more - keep PETG temps
+PROCESS_DATA_PETGCF_04_HS = augment_with_bed_temperatures(
+    PROCESS_DATA_PETGCF_04_HS, regular_temp=85, initial_temp=90
+)
+
+# Override: PETG-CF specific tuning
+PROCESS_DATA_PETGCF_04_HS["process_overrides"].update(
+    {
+        # Hotter for CF-filled viscosity
+        "nozzle_temperature_initial_layer": "265",
+        "nozzle_temperature": "260",
+        # Slightly fuller lines to avoid starvation
+        "filament_flow_ratio": "1.02",
+        # First layer: thicker/wider for grip with stiffer filament
+        "initial_layer_print_height": "0.26",
+        "initial_layer_line_width": "0.52",
+        "initial_layer_speed": "28",
+        "initial_layer_infill_speed": "36",
+        # Retraction: CF oozes less - shorten/slow to avoid pressure loss and wear
+        "filament_retraction_length": "0.7",
+        "filament_retraction_speed": "26",
+        "filament_deretraction_speed": "22",
+        # Cooling: gentler to preserve layer adhesion (CF runs crisp already)
+        "fan_min_speed": "10",
+        "fan_max_speed": "30",
+        "fan_cooling_layer_time": "10",
+        "overhang_fan_speed": "35",
+        # Limit flow; CF hates high back-pressure
+        "filament_max_volumetric_speed": "9",
+        # Overhang/bridge handling: CF bridges cleaner, keep moderate slowdowns
+        "detect_overhang_wall": "1",
+        "enable_overhang_speed": "1",
+        "overhang_1_4_speed": "0",
+        "overhang_2_4_speed": "0",
+        "overhang_3_4_speed": "45",
+        "overhang_4_4_speed": "30",
+        "bridge_speed": "22",
+        "bridge_no_support": "0",
+        # Support tuning - same clearances as PETG
+        "support_top_z_distance": "0.35",
+        "support_object_xy_distance": "0.5",
+        "support_interface_spacing": "1.0",
+        # Dimensional tweaks
+        "xy_hole_compensation": "0.04",
+        # Infill - slightly denser for stiff CF parts
+        "sparse_infill_density": "30%",
+        # Layer cooling throttling off; rely on fan curve above
+        "slow_down_for_layer_cooling": "0",
+        "min_layer_time": "6",
+        # Adhesion
+        "brim_type": "outer_and_inner",
+        "brim_width": "6",
+        "brim_object_gap": "0",
+        "elefant_foot_compensation": "0.1",
+    }
+)
+
+
 ##### PLA-CF 0.4 mm High Speed Profile #####
 # Ported from legacy 0.6mm steel nozzle PROCESS_DATA_06_PLACF (moebius_placf.FCMacro)
 # Adapted for 0.4mm nozzle with Microswiss FlowTech hotend (hardened steel)
@@ -364,5 +450,6 @@ _all_ = [
     "PROCESS_DATA_PLA_04_HS",
     "PROCESS_DATA_TPU_04_HS",
     "PROCESS_DATA_PETG_04_HS",
+    "PROCESS_DATA_PETGCF_04_HS",
     "PROCESS_DATA_PLACF_04_HS",
 ]
