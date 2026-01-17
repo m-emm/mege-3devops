@@ -88,8 +88,7 @@ filament_deretraction_speed:
   - nil
 filament_end_gcode:
   - "; filament end gcode \n"
-filament_id:
-  - GFGCF
+filament_id: GFGCF
 filament_retract_before_wipe:
   - nil
 filament_retract_restart_extra:

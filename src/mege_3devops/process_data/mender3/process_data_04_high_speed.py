@@ -208,15 +208,20 @@ PROCESS_DATA_PETG_04_HS["process_overrides"].update(
         "nozzle_temperature": "245",
         # Flow - slight over-extrusion helps at speed
         "filament_flow_ratio": "1.0",
-        # First layer - slower for adhesion (PETG is finicky)
+        # CRITICAL: Volumetric flow limit - PETG Hyper can handle 15+ mm³/s
+        # At 0.42mm × 0.24mm = 0.1008 mm²: 15 mm³/s → 149 mm/s max
+        # Base filament has 9 mm³/s which caps inner wall at ~89 mm/s!
+        "filament_max_volumetric_speed": "15",
+        # First layer - faster for HS, PETG sticks well to 90°C bed
         "initial_layer_print_height": "0.25",
         "initial_layer_line_width": "0.50",
-        "initial_layer_speed": "30",
-        "initial_layer_infill_speed": "40",
-        # PETG retraction - slightly longer & faster to reduce stringing at speed
-        "filament_retraction_length": "0.9",  # HP uses 0.8, slightly more for speed
-        "filament_retraction_speed": "30",  # HP uses 25
-        "filament_deretraction_speed": "25",  # HP uses 20
+        "initial_layer_speed": "50",  # bumped from 40 - hot bed helps adhesion
+        "initial_layer_infill_speed": "80",  # bumped from 60
+        # PETG retraction - fast retract/deretract to minimize travel overhead
+        # Deretraction is done on EVERY travel move - 25mm/s was killing time!
+        "filament_retraction_length": "0.8",  # slightly less for faster cycles
+        "filament_retraction_speed": "35",  # faster retract
+        "filament_deretraction_speed": "35",  # CRITICAL: was 25, now 35 - saves time on every travel!
         # Cooling - keep conservative like HP profile to prevent warping
         "fan_min_speed": "15",  # same as HP - PETG warps with too much fan
         "fan_max_speed": "40",  # slightly more than HP (35) for speed
@@ -225,15 +230,15 @@ PROCESS_DATA_PETG_04_HS["process_overrides"].update(
         # NOTE: Bed temperatures are set via augment_with_bed_temperatures() below
         # PETG specific
         "infill_wall_overlap": "25%",  # slightly more overlap for layer bonding at speed
-        # Overhang handling - PETG droops more than PLA
+        # Overhang handling - only slow for steep overhangs
         "detect_overhang_wall": "1",
         "enable_overhang_speed": "1",
         "overhang_1_4_speed": "0",  # normal speed
         "overhang_2_4_speed": "0",  # normal speed
-        "overhang_3_4_speed": "40",  # slow down earlier than PLA
-        "overhang_4_4_speed": "25",  # quite slow for steep overhangs
-        # Bridges - PETG bridges poorly, go slow
-        "bridge_speed": "20",
+        "overhang_3_4_speed": "60",  # bumped from 40 - PETG handles moderate overhangs
+        "overhang_4_4_speed": "35",  # bumped from 25 - still slow for steep
+        # Bridges - PETG bridges okay at moderate speed
+        "bridge_speed": "30",  # bumped from 20
         "bridge_no_support": "0",
         # Support tuning - PETG sticks to supports, need more distance
         "support_top_z_distance": "0.35",
@@ -243,12 +248,12 @@ PROCESS_DATA_PETG_04_HS["process_overrides"].update(
         "xy_hole_compensation": "0.04",
         # Infill
         "sparse_infill_density": "25%",
-        # Layer cooling
+        # Layer cooling - disable forced slowdowns
         "slow_down_for_layer_cooling": "0",  # rely on fan, not slowdown
-        "min_layer_time": "6",
-        # Adhesion - PETG needs good first layer
-        "brim_type": "outer_and_inner",
-        "brim_width": "6",
+        "min_layer_time": "5",  # reduced from 6
+        # Adhesion - PETG on hot bed sticks well, reduce brim
+        "brim_type": "outer_only",  # was outer_and_inner - faster, still enough grip
+        "brim_width": "4",  # was 6 - still adequate on 90°C bed
         "brim_object_gap": "0",
         "elefant_foot_compensation": "0.1",  # PETG squishes more
     }
@@ -262,17 +267,20 @@ PROCESS_DATA_PETG_04_HS = augment_with_bed_temperatures(
 
 ##### PETG-CF 0.4 mm High Speed Profile #####
 # PETG-CF: higher viscosity, lower ooze/stringing, stiffer & more brittle
-# Strategy vs PETG: hotter, slower, slightly fatter lines, gentler cooling, softer retraction
+# Strategy vs PETG: hotter, slightly fatter lines, gentler cooling, softer retraction
+# 2026-01-16: Tuned for faster small parts - CF reduces stringing so can push speeds
 
 petgcf_04_hs_layer_height_factor = 0.72  # ~0.26 mm - keep flow channels generous
-petgcf_04_hs_quality_speed = 70  # slower outer walls for layer bonding
-petgcf_04_hs_inner_speed = 130  # ~30% slower than PETG to respect flow limits
+petgcf_04_hs_quality_speed = (
+    90  # CF is stiff, handles faster outer walls than plain PETG
+)
+petgcf_04_hs_inner_speed = 160  # bumped to utilize higher volumetric flow limit
 
-petgcf_04_hs_quality_acceleration = 3500
-petgcf_04_hs_inner_acceleration = 6000
+petgcf_04_hs_quality_acceleration = 4500  # CF stiffness allows higher accel
+petgcf_04_hs_inner_acceleration = 7000  # closer to machine limits
 
-petgcf_04_hs_quality_jerk = 5
-petgcf_04_hs_inner_jerk = 8
+petgcf_04_hs_quality_jerk = 6  # slightly higher
+petgcf_04_hs_inner_jerk = 9
 
 
 PROCESS_DATA_PETGCF_04_HS = augment(
@@ -302,29 +310,31 @@ PROCESS_DATA_PETGCF_04_HS["process_overrides"].update(
         # Slightly fuller lines to avoid starvation
         "filament_flow_ratio": "1.02",
         # First layer: thicker/wider for grip with stiffer filament
+        # Bumped speeds - CF adheres well, no need to crawl
         "initial_layer_print_height": "0.26",
         "initial_layer_line_width": "0.52",
-        "initial_layer_speed": "28",
-        "initial_layer_infill_speed": "36",
-        # Retraction: CF oozes less - shorten/slow to avoid pressure loss and wear
+        "initial_layer_speed": "40",  # was 28 - CF sticks well
+        "initial_layer_infill_speed": "55",  # was 36
+        # Retraction: CF oozes less - can use faster retraction without artifacts
         "filament_retraction_length": "0.7",
-        "filament_retraction_speed": "26",
-        "filament_deretraction_speed": "22",
+        "filament_retraction_speed": "35",  # was 26 - CF doesn't string much
+        "filament_deretraction_speed": "30",  # was 22
         # Cooling: gentler to preserve layer adhesion (CF runs crisp already)
         "fan_min_speed": "10",
         "fan_max_speed": "30",
         "fan_cooling_layer_time": "10",
         "overhang_fan_speed": "35",
-        # Limit flow; CF hates high back-pressure
-        "filament_max_volumetric_speed": "9",
+        # CRITICAL: Raised volumetric flow limit - CF flows well at temp
+        # At 0.26mm × 0.4mm, 12 mm³/s → ~115 mm/s max (was 86 mm/s with 9)
+        "filament_max_volumetric_speed": "12",
         # Overhang/bridge handling: CF bridges cleaner, keep moderate slowdowns
         "detect_overhang_wall": "1",
         "enable_overhang_speed": "1",
         "overhang_1_4_speed": "0",
         "overhang_2_4_speed": "0",
-        "overhang_3_4_speed": "45",
-        "overhang_4_4_speed": "30",
-        "bridge_speed": "22",
+        "overhang_3_4_speed": "50",  # was 45 - CF is stiffer
+        "overhang_4_4_speed": "35",  # was 30
+        "bridge_speed": "28",  # was 22 - CF bridges well
         "bridge_no_support": "0",
         # Support tuning - same clearances as PETG
         "support_top_z_distance": "0.35",
@@ -336,9 +346,9 @@ PROCESS_DATA_PETGCF_04_HS["process_overrides"].update(
         "sparse_infill_density": "30%",
         # Layer cooling throttling off; rely on fan curve above
         "slow_down_for_layer_cooling": "0",
-        "min_layer_time": "6",
+        "min_layer_time": "5",  # was 6 - small parts don't need slowdown
         # Adhesion
-        "brim_type": "outer_and_inner",
+        "brim_type": "no_brim",  # sticks well enough, and doesn't warp much
         "brim_width": "6",
         "brim_object_gap": "0",
         "elefant_foot_compensation": "0.1",
