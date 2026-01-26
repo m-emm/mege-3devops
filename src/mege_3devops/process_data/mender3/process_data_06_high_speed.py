@@ -69,6 +69,7 @@ PROCESS_DATA_PLA_06_HS = augment(
     quality_jerk=pla_06_hs_quality_jerk,
     inner_jerk=pla_06_hs_inner_jerk,
 )
+PROCESS_DATA_PLA_06_HS["filament"] = "FilamentCrealityPLAHighSpeedTunedForSpeed"
 
 # Override: PLA-specific tuning for 0.6mm high-speed
 PROCESS_DATA_PLA_06_HS["process_overrides"].update(

@@ -4,7 +4,7 @@ compatible_printers:
 from: system
 instantiation: 'true'
 is_custom_defined: '0'
-name: FilamentCrealityPLAHighSpeed
+name: FilamentCrealityPLAHighSpeedTunedForSpeed
 setting_id: GMMMA
 flament_id: GMMMA_3
 type: filament

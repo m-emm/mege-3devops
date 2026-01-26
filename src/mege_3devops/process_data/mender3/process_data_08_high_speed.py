@@ -52,6 +52,8 @@ PROCESS_DATA_PLA_08_HS = augment(
     quality_jerk=pla_08_hs_quality_jerk,
     inner_jerk=pla_08_hs_inner_jerk,
 )
+PROCESS_DATA_PLA_08_HS["filament"] = "FilamentCrealityPLAHighSpeedTunedForSpeed"
+
 PROCESS_DATA_PLA_08_HS["process_overrides"].update(
     {
         "nozzle_temperature_initial_layer": "210",

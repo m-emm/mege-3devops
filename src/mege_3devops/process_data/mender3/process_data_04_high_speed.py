@@ -26,6 +26,7 @@ PROCESS_DATA_PLA_04_HS = augment(
     quality_jerk=pla_04_hs_quality_jerk,
     inner_jerk=pla_04_hs_inner_jerk,
 )
+PROCESS_DATA_PLA_04_HS["filament"] = "FilamentCrealityPLAHighSpeedTunedForSpeed"
 
 # Override: PLA-specific thermal tuning ONLY.
 PROCESS_DATA_PLA_04_HS["process_overrides"].update(
@@ -326,7 +327,7 @@ PROCESS_DATA_PETGCF_04_HS["process_overrides"].update(
         "overhang_fan_speed": "35",
         # CRITICAL: Raised volumetric flow limit - CF flows well at temp
         # At 0.26mm × 0.4mm, 12 mm³/s → ~115 mm/s max (was 86 mm/s with 9)
-        "filament_max_volumetric_speed": "12",
+        "filament_max_volumetric_speed": "20",
         # Overhang/bridge handling: CF bridges cleaner, keep moderate slowdowns
         "detect_overhang_wall": "1",
         "enable_overhang_speed": "1",
