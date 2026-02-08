@@ -353,6 +353,16 @@ PROCESS_DATA_PETGCF_04_HS["process_overrides"].update(
         "brim_width": "6",
         "brim_object_gap": "0",
         "elefant_foot_compensation": "0.1",
+        # --- Bridge tuning only: fix sagging top arc of horizontal holes ---
+        "bridge_flow": "0.90",
+        "internal_bridge_flow": "0.90",
+        # Make sure internal bridges don't inherit some 150% multiplier from a base profile
+        "internal_bridge_speed": "100%",
+        # Prefer thin bridges (less mass, cools faster)
+        "thick_bridges": "0",
+        "thick_internal_bridges": "0",
+        # Encourage bridge classification for small spans (like 3mm holes)
+        "max_bridge_length": "6",
     }
 )
 
