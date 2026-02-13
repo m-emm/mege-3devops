@@ -37,7 +37,7 @@ default_filament_colour:
   - '#333333'
 
 filament_cost:
-  - '40'
+  - '26'
 filament_density:
   - '1.30'
 filament_diameter:

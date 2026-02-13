@@ -185,9 +185,13 @@ machine_start_gcode: |-
   G1 X-2.0 Y20 Z0.28 F5000.0 ;Move to start position 
   M190 S[bed_temperature_initial_layer_single] ;Wait for bed temp to stabilize  
   M109 S[nozzle_temperature_initial_layer] ;Wait for nozzle temp to stabilize  
-  G1 X-2.0 Y145.0 Z0.28 F1500.0 E15 ;Draw the first line 
-  G1 X-1.7 Y145.0 Z0.28 F5000.0 ;Move to side a little 
-  G1 X-1.7 Y20 Z0.28 F1500.0 E30 ;Draw the second line 
+  G1 X-2.0 Y25 Z0.28 F1500.0 E0.5 ;Zig 1 - start extruding to clear blob
+  G1 X-1.5 Y30 Z0.28 F1500.0 E1 ;Zag 1
+  G1 X-2.0 Y35 Z0.28 F1500.0 E1.5 ;Zig 2
+  G1 X-1.5 Y40 Z0.28 F1500.0 E2 ;Zag 2 - initial blob cleared
+  G1 X-2.0 Y145.0 Z0.28 F1500.0 E15 ;Draw the first purge line 
+  G1 X-1.5 Y145.0 Z0.28 F5000.0 ;Move to side a little 
+  G1 X-1.5 Y50 Z0.28 F1500.0 E28 ;Draw the second line, stop short of start
   G92 E0 ;Reset Extruder 
   G1 E-1.0000 F1800 ;Retract a bit 
   G1 Z2.0 F3000 ;Move Z Axis up 

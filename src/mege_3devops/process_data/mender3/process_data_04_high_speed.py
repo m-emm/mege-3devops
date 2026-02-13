@@ -372,16 +372,17 @@ PROCESS_DATA_PETGCF_04_HS["process_overrides"].update(
 # Adapted for 0.4mm nozzle with Microswiss FlowTech hotend (hardened steel)
 # PLA-CF: abrasive, more viscous, needs higher temps, moderate speeds
 # Key: reduced retraction to minimize wear, higher temps for CF-filled flow
+# 2026-02-08: Speed-tuned based on successful PETG-CF profile - PLA-CF should be faster!
 
-placf_04_hs_layer_height_factor = 0.6  # ~0.22mm - slightly thicker for strength
-placf_04_hs_quality_speed = 80  # outer walls - CF more viscous than plain PLA
+placf_04_hs_layer_height_factor = 0.72  # ~0.26mm - match PETGCF for speed (was 0.7)
+placf_04_hs_quality_speed = 110  # outer walls - push harder for 35min target (was 100)
 placf_04_hs_inner_speed = (
-    140  # inner walls, infill - faster than old 70, but conservative
+    200  # inner walls, infill - PLA stiffness + high vol flow allows this (was 180)
 )
-placf_04_hs_quality_acceleration = 3500  # lower than PLA due to higher viscosity
-placf_04_hs_inner_acceleration = 6000  # same as legacy CF profile
-placf_04_hs_quality_jerk = 6  # conservative for quality
-placf_04_hs_inner_jerk = 10  # same as legacy CF profile
+placf_04_hs_quality_acceleration = 7000  # Push to near-max for 35min target (was 5000)
+placf_04_hs_inner_acceleration = 8000  # PLA stiffness allows machine max (was 7000)
+placf_04_hs_quality_jerk = 10  # aggressive for speed (was 8)
+placf_04_hs_inner_jerk = 12  # higher jerk for speed (was 10)
 
 PROCESS_DATA_PLACF_04_HS = augment(
     PROCESS_DATA_04_HS_BASE,
@@ -410,16 +411,21 @@ PROCESS_DATA_PLACF_04_HS["process_overrides"].update(
         "nozzle_temperature": "230",
         # Flow - neutral, CF already increases friction
         "filament_flow_ratio": "1.0",
-        # First layer - slower for adhesion, CF is heavier
-        "initial_layer_print_height": "0.22",
+        # CRITICAL: Volumetric flow limit - PLA-CF at 230°C flows excellently
+        # Raised from 20 to 24 to unlock full speed potential at 0.24mm layers
+        # At 0.24mm × 0.4mm: 24 mm³/s → ~250 mm/s theoretical max
+        "filament_max_volumetric_speed": "24",
+        # First layer - bumped speeds, PLA-CF sticks well
+        "initial_layer_print_height": "0.25",  # was 0.22
         "initial_layer_line_width": "0.46",
-        "initial_layer_speed": "35",
-        "initial_layer_infill_speed": "50",
+        "initial_layer_speed": "60",  # was 50 - aggressive for Part 1 bottleneck
+        "initial_layer_infill_speed": "80",  # was 70 - push first layer harder
         # Retraction - CRITICAL: reduce wear on abrasive filament (legacy used 1.0/30/25)
         # FlowTech has shorter melt zone, can use slightly shorter retraction
+        # Faster speeds save time on every travel move!
         "filament_retraction_length": "0.8",
-        "filament_retraction_speed": "25",
-        "filament_deretraction_speed": "20",
+        "filament_retraction_speed": "35",  # was 25 - PETG-CF uses this successfully
+        "filament_deretraction_speed": "30",  # was 20 - saves travel time
         # Cooling - moderate, CF dissipates heat well (legacy: 40-80%)
         "fan_min_speed": "50",
         "fan_max_speed": "85",
@@ -427,17 +433,24 @@ PROCESS_DATA_PLACF_04_HS["process_overrides"].update(
         "overhang_fan_speed": "95",
         # Layer cooling - disabled, rely on fan (same pattern as other HS profiles)
         "slow_down_for_layer_cooling": "0",
-        "min_layer_time": "6",
+        "min_layer_time": "1",  # was 5 - PLA-CF cools great with fan, no artificial slowdowns
         # Overhang handling - CF is stiffer, droops less than plain PLA
         "detect_overhang_wall": "1",
         "enable_overhang_speed": "1",
         "overhang_1_4_speed": "0",  # normal speed
         "overhang_2_4_speed": "0",  # normal speed
-        "overhang_3_4_speed": "45",  # CF handles overhangs well
-        "overhang_4_4_speed": "28",  # slow for steep overhangs
+        "overhang_3_4_speed": "50",  # was 45 - PLA-CF is stiffer, matches PETG-CF
+        "overhang_4_4_speed": "35",  # was 28 - matching PETG-CF
         # Bridges - CF bridges better than plain PLA due to stiffness
-        "bridge_speed": "28",  # same as legacy
+        "bridge_speed": "60",  # was 28 - PLA-CF is stiffer than PETG-CF, push harder!
         "bridge_no_support": "1",  # legacy setting
+        # --- Bridge tuning: fix sagging top arc of horizontal holes (from PETG-CF) ---
+        "bridge_flow": "0.90",
+        "internal_bridge_flow": "0.90",
+        "internal_bridge_speed": "100%",
+        "thick_bridges": "0",  # thin bridges cool faster
+        "thick_internal_bridges": "0",
+        "max_bridge_length": "6",  # encourage bridge classification
         # Support settings - CF is stiff, separates well
         "enable_support": "0",  # default off, CF parts usually designed without
         "support_threshold_angle": "50",  # legacy value
@@ -459,7 +472,7 @@ PROCESS_DATA_PLACF_04_HS["process_overrides"].update(
         # Quality settings from legacy
         "infill_wall_overlap": "20%",
         "resolution": "0.05",
-        # Adhesion - CF is heavier, needs good grip
+        # Adhesion - PLA-CF needs brim for bed adhesion (unlike PETG-CF which sticks like tar)
         "brim_type": "outer_and_inner",
         "brim_width": "6",
         "brim_object_gap": "0",

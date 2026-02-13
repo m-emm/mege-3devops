@@ -32,7 +32,7 @@ slow_down_min_speed:
 default_filament_colour:
   - '#222222'
 filament_cost:
-  - '40'
+  - '26'
 filament_density:
   - '1.25'
 filament_diameter:
