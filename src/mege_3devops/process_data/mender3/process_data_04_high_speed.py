@@ -512,8 +512,7 @@ PROCESS_DATA_PLAGFHT_04_HS = augment(
     inner_jerk=plagfht_04_hs_inner_jerk,
 )
 
-# Reuse PLA-CF filament preset until a dedicated FilamentPLAGFHT profile exists.
-PROCESS_DATA_PLAGFHT_04_HS["filament"] = "FilamentPLACF"
+PROCESS_DATA_PLAGFHT_04_HS["filament"] = "FilamentPLAGFHT"
 
 PROCESS_DATA_PLAGFHT_04_HS = augment_with_bed_temperatures(
     PROCESS_DATA_PLAGFHT_04_HS, regular_temp=55, initial_temp=60
