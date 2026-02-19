@@ -480,10 +480,108 @@ PROCESS_DATA_PLACF_04_HS["process_overrides"].update(
 )
 
 
+##### PLA-GFHT 0.4 mm High Speed Profile #####
+# Derived from PLA-CF with PLAGFHT datasheet limits:
+# - Nozzle: 210-230 C
+# - Bed: 25-60 C
+# - Fan: ON
+# - Print speed: up to 350 mm/s (machine/profile constraints still apply)
+# - Retraction: 1-3 mm at 20-40 mm/s
+# Operator notes (not slicer parameters):
+# - Build surface: PC or textured PEI, glue when needed
+# - Drying: 60 C for 6h
+# - Anneal print: 100 C for 30 min (recommended)
+# - Hardened nozzle required
+
+plagfht_04_hs_layer_height_factor = 0.72  # ~0.26mm
+plagfht_04_hs_quality_speed = 110  # match PLA-CF HS wall speed
+plagfht_04_hs_inner_speed = 200  # match PLA-CF HS inner/infill speed
+plagfht_04_hs_quality_acceleration = 7000
+plagfht_04_hs_inner_acceleration = 8000
+plagfht_04_hs_quality_jerk = 10
+plagfht_04_hs_inner_jerk = 12
+
+PROCESS_DATA_PLAGFHT_04_HS = augment(
+    PROCESS_DATA_04_HS_BASE,
+    layer_height_factor=plagfht_04_hs_layer_height_factor,
+    quality_speed=plagfht_04_hs_quality_speed,
+    inner_speed=plagfht_04_hs_inner_speed,
+    quality_acceleration=plagfht_04_hs_quality_acceleration,
+    inner_acceleration=plagfht_04_hs_inner_acceleration,
+    quality_jerk=plagfht_04_hs_quality_jerk,
+    inner_jerk=plagfht_04_hs_inner_jerk,
+)
+
+# Reuse PLA-CF filament preset until a dedicated FilamentPLAGFHT profile exists.
+PROCESS_DATA_PLAGFHT_04_HS["filament"] = "FilamentPLACF"
+
+PROCESS_DATA_PLAGFHT_04_HS = augment_with_bed_temperatures(
+    PROCESS_DATA_PLAGFHT_04_HS, regular_temp=55, initial_temp=60
+)
+
+PROCESS_DATA_PLAGFHT_04_HS["process_overrides"].update(
+    {
+        "nozzle_temperature_initial_layer": "230",
+        "nozzle_temperature": "225",
+        "filament_flow_ratio": "1.0",
+        "filament_max_volumetric_speed": "24",
+        "initial_layer_print_height": "0.25",
+        "initial_layer_line_width": "0.46",
+        "initial_layer_speed": "60",
+        "initial_layer_infill_speed": "80",
+        # Datasheet range: 1-3 mm
+        "filament_retraction_length": "1.2",
+        # Datasheet range: 20-40 mm/s
+        "filament_retraction_speed": "35",
+        "filament_deretraction_speed": "30",
+        # Fan ON
+        "fan_min_speed": "70",
+        "fan_max_speed": "100",
+        "fan_cooling_layer_time": "10",
+        "overhang_fan_speed": "100",
+        "slow_down_for_layer_cooling": "0",
+        "min_layer_time": "1",
+        "detect_overhang_wall": "1",
+        "enable_overhang_speed": "1",
+        "overhang_1_4_speed": "0",
+        "overhang_2_4_speed": "0",
+        "overhang_3_4_speed": "55",
+        "overhang_4_4_speed": "35",
+        "bridge_speed": "60",
+        "bridge_no_support": "1",
+        "bridge_flow": "0.90",
+        "internal_bridge_flow": "0.90",
+        "internal_bridge_speed": "100%",
+        "thick_bridges": "0",
+        "thick_internal_bridges": "0",
+        "max_bridge_length": "6",
+        "enable_support": "0",
+        "support_threshold_angle": "50",
+        "support_top_z_distance": "0.28",
+        "support_object_xy_distance": "0.5",
+        "support_interface_top_layers": "1",
+        "support_interface_bottom_layers": "1",
+        "xy_hole_compensation": "0.04",
+        "xy_contour_compensation": "0",
+        "elefant_foot_compensation": "0.08",
+        "sparse_infill_density": "40%",
+        "sparse_infill_pattern": "cubic",
+        "bottom_shell_layers": "3",
+        "top_shell_layers": "3",
+        "wall_loops": "2",
+        "infill_wall_overlap": "20%",
+        "resolution": "0.05",
+        "brim_type": "outer_and_inner",
+        "brim_width": "6",
+        "brim_object_gap": "0",
+    }
+)
+
 _all_ = [
     "PROCESS_DATA_PLA_04_HS",
     "PROCESS_DATA_TPU_04_HS",
     "PROCESS_DATA_PETG_04_HS",
     "PROCESS_DATA_PETGCF_04_HS",
     "PROCESS_DATA_PLACF_04_HS",
+    "PROCESS_DATA_PLAGFHT_04_HS",
 ]

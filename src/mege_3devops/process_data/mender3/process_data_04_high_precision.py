@@ -328,10 +328,103 @@ PROCESS_DATA_PETG_04_HP["process_overrides"].update(
 )
 
 
+##### PLA-CF 0.4 mm High Precision Profile #####
+# Ported from latest PROCESS_DATA_PLACF_04_HS tuning, but precision-biased:
+# lower layer height and slower quality-critical motion while keeping inner speeds practical.
+
+placf_04_hp_layer_height_factor = 0.25  # ~0.15 mm layer height for dimensional accuracy
+placf_04_hp_quality_speed = 35  # slower outer/top for cleaner dimensions
+placf_04_hp_inner_speed = 90  # keep inner paths reasonably fast
+placf_04_hp_quality_acceleration = 1200
+placf_04_hp_inner_acceleration = 3000
+placf_04_hp_quality_jerk = 5
+placf_04_hp_inner_jerk = 8
+
+
+PROCESS_DATA_PLACF_04_HP = augment(
+    PROCESS_DATA_04_HP_BASE,
+    layer_height_factor=placf_04_hp_layer_height_factor,
+    quality_speed=placf_04_hp_quality_speed,
+    inner_speed=placf_04_hp_inner_speed,
+    quality_acceleration=placf_04_hp_quality_acceleration,
+    inner_acceleration=placf_04_hp_inner_acceleration,
+    quality_jerk=placf_04_hp_quality_jerk,
+    inner_jerk=placf_04_hp_inner_jerk,
+)
+
+PROCESS_DATA_PLACF_04_HP["filament"] = "FilamentPLACF"
+
+PROCESS_DATA_PLACF_04_HP = augment_with_bed_temperatures(
+    PROCESS_DATA_PLACF_04_HP, regular_temp=75, initial_temp=80
+)
+
+PROCESS_DATA_PLACF_04_HP["process_overrides"].update(
+    {
+        # Material thermal + flow behavior from latest HS tuning
+        "nozzle_temperature_initial_layer": "235",
+        "nozzle_temperature": "230",
+        "filament_flow_ratio": "1.0",
+        "filament_max_volumetric_speed": "24",
+        # First layer: keep controlled for dimensional first-layer consistency
+        "initial_layer_print_height": "0.20",
+        "initial_layer_line_width": "0.46",
+        "initial_layer_speed": "30",
+        "initial_layer_infill_speed": "45",
+        # Retraction: shorter travel retract to reduce wear on abrasive CF filament
+        "filament_retraction_length": "0.8",
+        "filament_retraction_speed": "35",
+        "filament_deretraction_speed": "30",
+        # Cooling and small-feature behavior
+        "fan_min_speed": "50",
+        "fan_max_speed": "85",
+        "fan_cooling_layer_time": "10",
+        "overhang_fan_speed": "95",
+        "slow_down_for_layer_cooling": "1",
+        "min_layer_time": "8",
+        # Overhangs / bridges: keep HS bridge tuning but at precision-friendly speed
+        "detect_overhang_wall": "1",
+        "enable_overhang_speed": "1",
+        "overhang_1_4_speed": "0",
+        "overhang_2_4_speed": "0",
+        "overhang_3_4_speed": "35",
+        "overhang_4_4_speed": "25",
+        "bridge_speed": "30",
+        "bridge_no_support": "1",
+        "bridge_flow": "0.90",
+        "internal_bridge_flow": "0.90",
+        "internal_bridge_speed": "100%",
+        "thick_bridges": "0",
+        "thick_internal_bridges": "0",
+        "max_bridge_length": "6",
+        # Support / compensation behavior
+        "enable_support": "0",
+        "support_threshold_angle": "50",
+        "support_top_z_distance": "0.28",
+        "support_object_xy_distance": "0.5",
+        "support_interface_top_layers": "1",
+        "support_interface_bottom_layers": "1",
+        "xy_hole_compensation": "0.04",
+        "xy_contour_compensation": "0",
+        "elefant_foot_compensation": "0.08",
+        # Structure / adhesion
+        "sparse_infill_density": "30%",
+        "sparse_infill_pattern": "cubic",
+        "bottom_shell_layers": "3",
+        "top_shell_layers": "4",
+        "wall_loops": "2",
+        "infill_wall_overlap": "20%",
+        "brim_type": "outer_and_inner",
+        "brim_width": "6",
+        "brim_object_gap": "0",
+    }
+)
+
+
 _all_ = [
     "PROCESS_DATA_PLA_04_HP",
     "PROCESS_DATA_TPU_04_HP",
     "PROCESS_DATA_PETG_04_HP",
+    "PROCESS_DATA_PLACF_04_HP",
 ]
 
 
@@ -463,6 +556,8 @@ def main():
 
     if material == "PLA":
         process_data = PROCESS_DATA_PLA_04_HP
+    elif material == "PLACF":
+        process_data = PROCESS_DATA_PLACF_04_HP
     elif material == "TPU":
         process_data = PROCESS_DATA_TPU_04_HP
     elif material == "PETG":
