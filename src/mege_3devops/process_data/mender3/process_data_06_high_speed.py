@@ -34,15 +34,10 @@ PROCESS_DATA_06_HS_BASE["process_overrides"].update(
         "line_width": "0.65",  # ~108% of nozzle
         "outer_wall_line_width": "0.60",  # exactly nozzle diameter for quality
         "inner_wall_line_width": "0.65",
-        "solid_infill_line_width": "0.65",
         "internal_solid_infill_line_width": "0.65",
         "sparse_infill_line_width": "0.70",  # wider for speed
         "top_surface_line_width": "0.60",  # quality surface
         "support_line_width": "0.65",
-        "support_interface_line_width": "0.60",
-        "thin_wall_line_width": "0.60",
-        "gap_fill_line_width": "0.60",
-        "bridge_line_width": "0.60",
         "initial_layer_line_width": "0.70",  # wider for adhesion
         "wall_loops": "1",  # fewer walls for speed
         "sparse_infill_density": "20%",  # more sparse for speed
@@ -97,7 +92,7 @@ PROCESS_DATA_PLA_06_HS["process_overrides"].update(
         "fan_cooling_layer_time": "10",  # slightly longer for thicker layers
         # CRITICAL: Disable cooling slowdown - rely on fan, not speed reduction
         "slow_down_for_layer_cooling": "0",
-        "min_layer_time": "5",
+        "slow_down_layer_time": "5",
         # Overhang handling - same aggressive settings as 04 HS
         "detect_overhang_wall": "1",
         "enable_overhang_speed": "1",
@@ -218,7 +213,7 @@ PROCESS_DATA_TPU_06_HS["process_overrides"].update(
         # CRITICAL: Disable cooling slowdown - this was THE key fix in head_band!
         # TPU cools fine with fan alone, slowdown kills print time (can drop to 10mm/s!)
         "slow_down_for_layer_cooling": "0",
-        "min_layer_time": "5",  # low limit - no forced slowdowns
+        "slow_down_layer_time": "5",  # low limit - no forced slowdowns
         # CRITICAL: Disable overhang speed reduction for TPU
         # TPU droops less than PLA, and slowdowns kill print time
         "detect_overhang_wall": "0",
@@ -331,7 +326,7 @@ PROCESS_DATA_PETG_06_HS["process_overrides"].update(
         "bridge_speed": "25",
         "filament_max_volumetric_speed": "22",  # PETG flows slower than PLA
         "slow_down_for_layer_cooling": "0",
-        "min_layer_time": "6",
+        "slow_down_layer_time": "6",
         "support_top_z_distance": "0.40",
         "support_object_xy_distance": "0.6",
         "xy_hole_compensation": "0.06",

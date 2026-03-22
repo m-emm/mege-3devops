@@ -14,7 +14,6 @@ PROCESS_DATA_06_BASE = {
         ### WARNING: These are the BASE Settings - DO NOT TWEAK MATERIAL SPECIFIC THINGS HERE !!!
         "adaptive_layer_height": "0",
         "bottom_shell_layers": "3",  # More layers for strength
-        "bridge_line_width": "0.6",
         "bridge_no_support": "1",
         "bridge_speed": "30",  # Faster bridges for PLA
         "brim_ears_detection_length": "1",
@@ -32,7 +31,6 @@ PROCESS_DATA_06_BASE = {
         "filament_flow_ratio": "1.0",
         "filament_retraction_length": "1.2",  # Shorter for PLA
         "filament_retraction_speed": "40",  # Faster retraction
-        "gap_fill_line_width": "0.6",
         "hot_plate_temp_initial_layer": "65",  # PLA bed temp
         "infill_wall_overlap": "25%",  # Standard for PLA
         "initial_layer_line_width": "0.7",
@@ -40,7 +38,7 @@ PROCESS_DATA_06_BASE = {
         "inner_wall_line_width": "0.65",
         "internal_solid_infill_line_width": "0.65",
         "line_width": "0.65",  # ~108% of nozzle diameter for good flow
-        "min_layer_time": "8",  # Shorter for PLA
+        "slow_down_layer_time": "8",  # Shorter for PLA
         "nozzle_diameter": "0.6",
         "nozzle_temperature_initial_layer": "235",  # Slightly higher for first layer
         "nozzle_temperature": "230",
@@ -48,14 +46,12 @@ PROCESS_DATA_06_BASE = {
         "overhang_fan_speed": "100",
         "resolution": "0.05",  # Finer resolution for PLA
         "slow_down_for_layer_cooling": "1",
-        "solid_infill_line_width": "0.65",
         "sparse_infill_density": "20%",
         "sparse_infill_line_width": "0.7",  # Wider for faster infill
         "sparse_infill_pattern": "cubic",
         "support_base_pattern_spacing": "2.5",
         "support_base_pattern": "rectilinear",
         "support_bottom_interface_spacing": "0.5",
-        "support_interface_line_width": "0.6",
         "support_line_width": "0.65",
         "support_object_first_layer_gap": "0.3",
         "support_object_xy_distance": "0.35",
@@ -66,7 +62,6 @@ PROCESS_DATA_06_BASE = {
         "support_threshold_overlap": "50%",
         "support_top_z_distance": "0.2",
         "support_type": "normal(auto)",
-        "thin_wall_line_width": "0.6",
         "top_shell_layers": "3",
         "top_surface_line_width": "0.6",  # Finer for surface quality
         "wall_loops": "1",
@@ -119,7 +114,7 @@ PROCESS_DATA_PLA_06["process_overrides"].update(  # curently optimized for bed a
         # Note: Bed temperatures are now set via augment_with_bed_temperatures() above
         # All plate types use 70°C/75°C for reliable PLA printing
         "initial_layer_print_height": "0.42",  # Thicker first layer for better bed adhesion (70% of 0.6mm nozzle)
-        "min_layer_time": "15",  # Slower first layers for better adhesion
+        "slow_down_layer_time": "15",  # Slower first layers for better adhesion
         "nozzle_temperature_initial_layer": "245",  # Max PLA temp for steel nozzle and fast printing
         "nozzle_temperature": "238",  # High temp to maintain flow at speed with steel nozzle
         "slow_down_for_layer_cooling": "1",
@@ -186,7 +181,7 @@ PROCESS_DATA_PVA_06["process_overrides"].update(
         "initial_layer_print_height": "0.35",  # Thick first layer for stability
         "inner_wall_line_width": "0.65",  # Standard wall thickness
         "internal_solid_infill_line_width": "0.65",
-        "min_layer_time": "12",  # Reasonable cooling time
+        "slow_down_layer_time": "12",  # Reasonable cooling time
         "nozzle_temperature_initial_layer": "210",  # Higher temp for first layer adhesion
         "nozzle_temperature": "205",  # Slightly higher for structural printing
         "outer_wall_line_width": "0.6",  # Good surface finish
@@ -204,9 +199,6 @@ PROCESS_DATA_PVA_06["process_overrides"].update(
         # Form-specific settings
         "slow_down_for_layer_cooling": "1",
         "bridge_no_support": "0",  # Forms may need bridge supports
-        "gap_fill_line_width": "0.6",
-        "thin_wall_line_width": "0.6",
-        "solid_infill_line_width": "0.65",
         # Support settings for complex forms
         "support_threshold_angle": "45",  # Standard support angle
         "support_top_z_distance": "0.25",  # Good support interface
@@ -259,7 +251,7 @@ PROCESS_DATA_TPU_06["process_overrides"].update(
         "initial_layer_print_height": "0.24",
         "inner_wall_line_width": "0.60",
         "internal_solid_infill_line_width": "0.60",
-        "min_layer_time": "30",
+        "slow_down_layer_time": "30",
         "nozzle_temperature_initial_layer": "240",
         "nozzle_temperature": "230",
         "outer_wall_line_width": "0.58",
@@ -333,7 +325,7 @@ PROCESS_DATA_PETG_06["process_overrides"].update(
         "initial_layer_print_height": "0.28",
         "inner_wall_line_width": "0.5",
         "internal_solid_infill_line_width": "0.5",
-        "min_layer_time": "30",
+        "slow_down_layer_time": "30",
         "nozzle_temperature_initial_layer": "260",
         "nozzle_temperature": "255",
         "outer_wall_line_width": "0.5",

@@ -8,7 +8,6 @@ PROCESS_DATA_04_HP_BASE = {
         #  – material-specific flow, temps, and fans are to be set later –
         "adaptive_layer_height": "1",  # allow fine layer variation for detail
         "bottom_shell_layers": "3",  # unchanged
-        "bridge_line_width": "0.45",  # scale with nozzle size
         "bridge_no_support": "1",
         "bridge_speed": "20",  # slower → cleaner bridges
         "brim_ears_detection_length": "1",
@@ -26,7 +25,6 @@ PROCESS_DATA_04_HP_BASE = {
         "filament_flow_ratio": "1.0",  # keep neutral; adjust per material later
         "filament_retraction_length": "1.0",  # a bit shorter for tighter path & detail
         "filament_retraction_speed": "35",
-        "gap_fill_line_width": "0.40",  # narrower for fine gaps
         "hot_plate_temp_initial_layer": "65",
         "infill_wall_overlap": "20%",  # lower overlap = truer holes
         "initial_layer_line_width": "0.48",
@@ -34,7 +32,7 @@ PROCESS_DATA_04_HP_BASE = {
         "inner_wall_line_width": "0.42",  # ~105% of nozzle
         "internal_solid_infill_line_width": "0.42",
         "line_width": "0.42",  # global reference width
-        "min_layer_time": "10",  # allow adequate cooling
+        "slow_down_layer_time": "10",  # allow adequate cooling
         "nozzle_diameter": "0.4",  # main change
         "nozzle_temperature_initial_layer": "235",  # placeholder, override in material
         "nozzle_temperature": "230",
@@ -42,25 +40,22 @@ PROCESS_DATA_04_HP_BASE = {
         "overhang_fan_speed": "100",
         "resolution": "0.03",  # finer geometry resolution
         "slow_down_for_layer_cooling": "1",
-        "solid_infill_line_width": "0.42",
         "sparse_infill_density": "20%",  # unchanged
         "sparse_infill_line_width": "0.45",
         "sparse_infill_pattern": "cubic",
         "support_base_pattern_spacing": "2.5",
         "support_base_pattern": "rectilinear",
         "support_bottom_interface_spacing": "0.5",
-        "support_interface_line_width": "0.4",
         "support_line_width": "0.42",
         "support_object_first_layer_gap": "0.25",
         "support_object_xy_distance": "0.35",
         "support_on_build_plate_only": "1",
         "support_remove_small_overhang": "1",
-        "support_style": "rectilinear",
+        "support_style": "default",
         "support_threshold_angle": "60",
         "support_threshold_overlap": "50%",
         "support_top_z_distance": "0.2",
         "support_type": "normal(auto)",
-        "thin_wall_line_width": "0.40",  # for single-extrusion features
         "top_shell_layers": "4",  # one more for smoother top finish
         "top_surface_line_width": "0.40",
         "wall_loops": "2",  # double perimeters for accuracy & strength
@@ -96,10 +91,10 @@ def augment_with_accelerations(process_data, quality_acceleration, inner_acceler
     pd["process_overrides"]["outer_wall_acceleration"] = f"{quality_acceleration}"
     pd["process_overrides"]["top_surface_acceleration"] = f"{quality_acceleration}"
     pd["process_overrides"]["inner_wall_acceleration"] = f"{inner_acceleration}"
-    pd["process_overrides"]["solid_infill_acceleration"] = f"{inner_acceleration}"
     pd["process_overrides"]["sparse_infill_acceleration"] = f"{inner_acceleration}"
-    pd["process_overrides"]["support_acceleration"] = f"{inner_acceleration}"
-    pd["process_overrides"]["support_interface_acceleration"] = f"{inner_acceleration}"
+    pd["process_overrides"][
+        "internal_solid_infill_acceleration"
+    ] = f"{inner_acceleration}"
     return pd
 
 
@@ -110,10 +105,7 @@ def augment_with_jerks(process_data, quality_jerk, inner_jerk):
     pd["process_overrides"]["outer_wall_jerk"] = f"{quality_jerk}"
     pd["process_overrides"]["top_surface_jerk"] = f"{quality_jerk}"
     pd["process_overrides"]["inner_wall_jerk"] = f"{inner_jerk}"
-    pd["process_overrides"]["solid_infill_jerk"] = f"{inner_jerk}"
-    pd["process_overrides"]["sparse_infill_jerk"] = f"{inner_jerk}"
-    pd["process_overrides"]["support_interface_jerk"] = f"{inner_jerk}"
-    pd["process_overrides"]["support_jerk"] = f"{inner_jerk}"
+    pd["process_overrides"]["infill_jerk"] = f"{inner_jerk}"
     return pd
 
 
@@ -246,7 +238,7 @@ PROCESS_DATA_TPU_04_HP["process_overrides"].update(
         "fan_min_speed": "35",
         "fan_max_speed": "55",
         "fan_cooling_layer_time": "18",  # enough to cool TPU on tiny parts
-        "min_layer_time": "18",
+        "slow_down_layer_time": "18",
         "enable_support": "1",
         "support_threshold_angle": "45",
         "support_top_z_distance": "0.4",
@@ -380,7 +372,7 @@ PROCESS_DATA_PLACF_04_HP["process_overrides"].update(
         "fan_cooling_layer_time": "10",
         "overhang_fan_speed": "95",
         "slow_down_for_layer_cooling": "1",
-        "min_layer_time": "8",
+        "slow_down_layer_time": "8",
         # Overhangs / bridges: keep HS bridge tuning but at precision-friendly speed
         "detect_overhang_wall": "1",
         "enable_overhang_speed": "1",

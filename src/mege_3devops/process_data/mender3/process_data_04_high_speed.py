@@ -71,7 +71,7 @@ PROCESS_DATA_PLA_04_HS["process_overrides"].update(
         "bridge_speed": "25",
         "bridge_no_support": "0",
         # Lower min layer time to prevent forced slowdowns
-        "min_layer_time": "5",
+        "slow_down_layer_time": "5",
     }
 )
 
@@ -132,7 +132,7 @@ PROCESS_DATA_TPU_04_HS["process_overrides"].update(
         # CRITICAL: Disable cooling slowdown - rely on fan, not speed reduction!
         # This was the key fix in head_band that prevented 10mm/s slowdowns
         "slow_down_for_layer_cooling": "0",
-        "min_layer_time": "5",  # much lower than HP (18) - no forced slowdowns
+        "slow_down_layer_time": "5",  # much lower than HP (18) - no forced slowdowns
         # CRITICAL: Disable overhang speed reduction for TPU
         # TPU droops less than PLA, and slowdowns kill print time
         "detect_overhang_wall": "0",
@@ -251,7 +251,7 @@ PROCESS_DATA_PETG_04_HS["process_overrides"].update(
         "sparse_infill_density": "25%",
         # Layer cooling - disable forced slowdowns
         "slow_down_for_layer_cooling": "0",  # rely on fan, not slowdown
-        "min_layer_time": "5",  # reduced from 6
+        "slow_down_layer_time": "5",  # reduced from 6
         # Adhesion - PETG on hot bed sticks well, reduce brim
         "brim_type": "outer_only",  # was outer_and_inner - faster, still enough grip
         "brim_width": "4",  # was 6 - still adequate on 90°C bed
@@ -347,7 +347,7 @@ PROCESS_DATA_PETGCF_04_HS["process_overrides"].update(
         "sparse_infill_density": "30%",
         # Layer cooling throttling off; rely on fan curve above
         "slow_down_for_layer_cooling": "0",
-        "min_layer_time": "5",  # was 6 - small parts don't need slowdown
+        "slow_down_layer_time": "5",  # was 6 - small parts don't need slowdown
         # Adhesion
         "brim_type": "no_brim",  # sticks well enough, and doesn't warp much
         "brim_width": "6",
@@ -433,7 +433,7 @@ PROCESS_DATA_PLACF_04_HS["process_overrides"].update(
         "overhang_fan_speed": "95",
         # Layer cooling - disabled, rely on fan (same pattern as other HS profiles)
         "slow_down_for_layer_cooling": "0",
-        "min_layer_time": "1",  # was 5 - PLA-CF cools great with fan, no artificial slowdowns
+        "slow_down_layer_time": "1",  # was 5 - PLA-CF cools great with fan, no artificial slowdowns
         # Overhang handling - CF is stiffer, droops less than plain PLA
         "detect_overhang_wall": "1",
         "enable_overhang_speed": "1",
@@ -539,7 +539,7 @@ PROCESS_DATA_PLAGFHT_04_HS["process_overrides"].update(
         "fan_cooling_layer_time": "10",
         "overhang_fan_speed": "100",
         "slow_down_for_layer_cooling": "0",
-        "min_layer_time": "1",
+        "slow_down_layer_time": "1",
         "detect_overhang_wall": "1",
         "enable_overhang_speed": "1",
         "overhang_1_4_speed": "0",

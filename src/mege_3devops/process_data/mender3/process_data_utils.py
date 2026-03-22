@@ -27,10 +27,10 @@ def augment_with_accelerations(process_data, quality_acceleration, inner_acceler
     pd["process_overrides"]["outer_wall_acceleration"] = f"{quality_acceleration}"
     pd["process_overrides"]["top_surface_acceleration"] = f"{quality_acceleration}"
     pd["process_overrides"]["inner_wall_acceleration"] = f"{inner_acceleration}"
-    pd["process_overrides"]["solid_infill_acceleration"] = f"{inner_acceleration}"
     pd["process_overrides"]["sparse_infill_acceleration"] = f"{inner_acceleration}"
-    pd["process_overrides"]["support_acceleration"] = f"{inner_acceleration}"
-    pd["process_overrides"]["support_interface_acceleration"] = f"{inner_acceleration}"
+    pd["process_overrides"][
+        "internal_solid_infill_acceleration"
+    ] = f"{inner_acceleration}"
     return pd
 
 
@@ -41,10 +41,7 @@ def augment_with_jerks(process_data, quality_jerk, inner_jerk):
     pd["process_overrides"]["outer_wall_jerk"] = f"{quality_jerk}"
     pd["process_overrides"]["top_surface_jerk"] = f"{quality_jerk}"
     pd["process_overrides"]["inner_wall_jerk"] = f"{inner_jerk}"
-    pd["process_overrides"]["solid_infill_jerk"] = f"{inner_jerk}"
-    pd["process_overrides"]["sparse_infill_jerk"] = f"{inner_jerk}"
-    pd["process_overrides"]["support_interface_jerk"] = f"{inner_jerk}"
-    pd["process_overrides"]["support_jerk"] = f"{inner_jerk}"
+    pd["process_overrides"]["infill_jerk"] = f"{inner_jerk}"
     return pd
 
 
