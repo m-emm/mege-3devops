@@ -338,8 +338,104 @@ PROCESS_DATA_PETG_06_HS["process_overrides"].update(
 )
 
 
+##### PETG-CF 0.6 mm High Speed Profile #####
+# Derived from PETG 0.6 HS nozzle scaling, then adjusted with the PETG-CF material
+# deltas already validated in the 0.4 HS profile.
+#
+# Main migration logic:
+# - keep the 0.6mm base geometry and line widths from PROCESS_DATA_06_HS_BASE
+# - keep PETG 0.6 general motion envelope as the starting point
+# - re-apply PETG-CF material behavior vs PETG:
+#   hotter, slightly fuller lines, gentler cooling, less overlap, bridge tuning
+
+petgcf_06_hs_layer_height_factor = 0.62  # ~0.34mm layers, slightly fuller than PETG 06
+petgcf_06_hs_quality_speed = 90
+petgcf_06_hs_inner_speed = 160
+petgcf_06_hs_quality_acceleration = 4500
+petgcf_06_hs_inner_acceleration = 7000
+petgcf_06_hs_quality_jerk = 6
+petgcf_06_hs_inner_jerk = 9
+
+PROCESS_DATA_PETGCF_06_HS = augment(
+    PROCESS_DATA_06_HS_BASE,
+    layer_height_factor=petgcf_06_hs_layer_height_factor,
+    quality_speed=petgcf_06_hs_quality_speed,
+    inner_speed=petgcf_06_hs_inner_speed,
+    quality_acceleration=petgcf_06_hs_quality_acceleration,
+    inner_acceleration=petgcf_06_hs_inner_acceleration,
+    quality_jerk=petgcf_06_hs_quality_jerk,
+    inner_jerk=petgcf_06_hs_inner_jerk,
+)
+
+PROCESS_DATA_PETGCF_06_HS["filament"] = "FilamentPETGCF"
+
+PROCESS_DATA_PETGCF_06_HS = augment_with_bed_temperatures(
+    PROCESS_DATA_PETGCF_06_HS, regular_temp=85, initial_temp=90
+)
+
+PROCESS_DATA_PETGCF_06_HS["process_overrides"].update(
+    {
+        # Hotter than plain PETG for CF-filled viscosity.
+        "nozzle_temperature_initial_layer": "265",
+        "nozzle_temperature": "260",
+        # Slightly fuller lines to avoid starvation with the filled melt.
+        "filament_flow_ratio": "1.02",
+        # First layer: a bit fuller than PETG 06, but still conservative for stability.
+        "initial_layer_print_height": "0.32",
+        "initial_layer_line_width": "0.72",
+        "initial_layer_speed": "25",
+        "initial_layer_infill_speed": "35",
+        # Larger nozzle wants more retraction, but CF strings less than plain PETG.
+        "filament_retraction_length": "0.8",
+        "filament_retraction_speed": "35",
+        "filament_deretraction_speed": "30",
+        # Gentler cooling than PETG; CF already prints crisper.
+        "fan_min_speed": "10",
+        "fan_max_speed": "30",
+        "fan_cooling_layer_time": "10",
+        "overhang_fan_speed": "35",
+        # Slightly higher than PETG 06, but kept conservative for stable flow.
+        "filament_max_volumetric_speed": "24",
+        # Less overlap than plain PETG to avoid overstuffed corners.
+        "infill_wall_overlap": "20%",
+        # CF bridges cleanly; keep support bridging explicit and controlled.
+        "detect_overhang_wall": "1",
+        "enable_overhang_speed": "1",
+        "overhang_1_4_speed": "0",
+        "overhang_2_4_speed": "0",
+        "overhang_3_4_speed": "35",
+        "overhang_4_4_speed": "25",
+        "bridge_speed": "24",
+        "bridge_no_support": "0",
+        "bridge_flow": "0.90",
+        "internal_bridge_flow": "0.90",
+        "internal_bridge_speed": "100%",
+        "max_bridge_length": "6",
+        "thick_bridges": "0",
+        "thick_internal_bridges": "0",
+        # Larger nozzle support clearances, following PETG 06 geometry.
+        "support_top_z_distance": "0.40",
+        "support_object_xy_distance": "0.6",
+        "support_interface_spacing": "1.0",
+        # Hole closure rises with 0.6mm, keep the PETG 06 compensation.
+        "xy_hole_compensation": "0.06",
+        # Slightly denser for the stiffer CF parts.
+        "sparse_infill_density": "30%",
+        # Rely on fan curve, not cooldown slowdowns.
+        "slow_down_for_layer_cooling": "0",
+        "slow_down_layer_time": "5",
+        # CF typically sticks well enough without brim.
+        "brim_type": "no_brim",
+        "brim_width": "6",
+        "brim_object_gap": "0",
+        "elefant_foot_compensation": "0.12",
+    }
+)
+
+
 _all_ = [
     "PROCESS_DATA_PLA_06_HS",
     "PROCESS_DATA_TPU_06_HS",
     "PROCESS_DATA_PETG_06_HS",
+    "PROCESS_DATA_PETGCF_06_HS",
 ]
