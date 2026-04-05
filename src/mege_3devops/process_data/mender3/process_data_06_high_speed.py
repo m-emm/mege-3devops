@@ -338,6 +338,90 @@ PROCESS_DATA_PETG_06_HS["process_overrides"].update(
 )
 
 
+##### PLA-CF 0.6 mm High Speed Profile #####
+# Derived from the 0.6mm HS base geometry together with the validated PLA-CF
+# material behavior from the 0.4mm high-speed profile.
+
+placf_06_hs_layer_height_factor = 0.70  # ~0.42mm layers
+placf_06_hs_quality_speed = 100
+placf_06_hs_inner_speed = 170
+placf_06_hs_quality_acceleration = 5500
+placf_06_hs_inner_acceleration = 8000
+placf_06_hs_quality_jerk = 8
+placf_06_hs_inner_jerk = 10
+
+PROCESS_DATA_PLACF_06_HS = augment(
+    PROCESS_DATA_06_HS_BASE,
+    layer_height_factor=placf_06_hs_layer_height_factor,
+    quality_speed=placf_06_hs_quality_speed,
+    inner_speed=placf_06_hs_inner_speed,
+    quality_acceleration=placf_06_hs_quality_acceleration,
+    inner_acceleration=placf_06_hs_inner_acceleration,
+    quality_jerk=placf_06_hs_quality_jerk,
+    inner_jerk=placf_06_hs_inner_jerk,
+)
+
+PROCESS_DATA_PLACF_06_HS["filament"] = "FilamentPLACF"
+
+PROCESS_DATA_PLACF_06_HS = augment_with_bed_temperatures(
+    PROCESS_DATA_PLACF_06_HS, regular_temp=65, initial_temp=70
+)
+
+PROCESS_DATA_PLACF_06_HS["process_overrides"].update(
+    {
+        "nozzle_temperature_initial_layer": "240",
+        "nozzle_temperature": "235",
+        "filament_flow_ratio": "1.0",
+        "filament_max_volumetric_speed": "24",
+        "initial_layer_print_height": "0.30",
+        "initial_layer_line_width": "0.70",
+        "initial_layer_speed": "40",
+        "initial_layer_infill_speed": "60",
+        "filament_retraction_length": "1.0",
+        "filament_retraction_speed": "35",
+        "filament_deretraction_speed": "30",
+        "fan_min_speed": "50",
+        "fan_max_speed": "85",
+        "fan_cooling_layer_time": "10",
+        "overhang_fan_speed": "95",
+        "slow_down_for_layer_cooling": "0",
+        "slow_down_layer_time": "1",
+        "detect_overhang_wall": "1",
+        "enable_overhang_speed": "1",
+        "overhang_1_4_speed": "0",
+        "overhang_2_4_speed": "0",
+        "overhang_3_4_speed": "50",
+        "overhang_4_4_speed": "35",
+        "bridge_speed": "45",
+        "bridge_no_support": "1",
+        "bridge_flow": "0.90",
+        "internal_bridge_flow": "0.90",
+        "internal_bridge_speed": "100%",
+        "max_bridge_length": "6",
+        "thick_bridges": "0",
+        "thick_internal_bridges": "0",
+        "enable_support": "0",
+        "support_threshold_angle": "50",
+        "support_top_z_distance": "0.40",
+        "support_object_xy_distance": "0.6",
+        "support_interface_spacing": "1.0",
+        "xy_hole_compensation": "0.06",
+        "xy_contour_compensation": "0",
+        "elefant_foot_compensation": "0.10",
+        "sparse_infill_density": "40%",
+        "sparse_infill_pattern": "cubic",
+        "bottom_shell_layers": "3",
+        "top_shell_layers": "3",
+        "wall_loops": "2",
+        "infill_wall_overlap": "20%",
+        "resolution": "0.06",
+        "brim_type": "outer_and_inner",
+        "brim_width": "6",
+        "brim_object_gap": "0",
+    }
+)
+
+
 ##### PETG-CF 0.6 mm High Speed Profile #####
 # Derived from PETG 0.6 HS nozzle scaling, then adjusted with the PETG-CF material
 # deltas already validated in the 0.4 HS profile.
@@ -437,5 +521,6 @@ _all_ = [
     "PROCESS_DATA_PLA_06_HS",
     "PROCESS_DATA_TPU_06_HS",
     "PROCESS_DATA_PETG_06_HS",
+    "PROCESS_DATA_PLACF_06_HS",
     "PROCESS_DATA_PETGCF_06_HS",
 ]

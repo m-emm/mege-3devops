@@ -1,0 +1,11 @@
+material_id: FilamentCrealityPLAHighSpeedTunedForSpeed
+family: PLA
+nozzle_temp_c: 190.0
+cooling_factor: 1.0
+warp_factor: 0.0
+stringing_factor: 0.2
+support_stickiness: 0.3
+flow_factor: 0.75
+base_volumetric_flow_mm3_s: 15
+bed_temp_c: 70.0
+initial_bed_temp_c: 75.0

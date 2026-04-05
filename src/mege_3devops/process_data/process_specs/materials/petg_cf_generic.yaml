@@ -1,0 +1,9 @@
+material_id: FilamentPETGCF
+family: PETG_CF
+nozzle_temp_c: 250.0
+cooling_factor: 0.3
+warp_factor: 0.65
+stringing_factor: 0.35
+support_stickiness: 0.4
+flow_factor: 0.8
+base_volumetric_flow_mm3_s: 20

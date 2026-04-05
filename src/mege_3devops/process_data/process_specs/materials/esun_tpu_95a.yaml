@@ -1,0 +1,9 @@
+material_id: FilamenteSunTPU95A
+family: TPU
+nozzle_temp_c: 220.0
+cooling_factor: 0.5
+warp_factor: 0.2
+stringing_factor: 0.9
+support_stickiness: 0.8
+flow_factor: 0.55
+base_volumetric_flow_mm3_s: 15
