@@ -236,9 +236,6 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             "inner_wall_acceleration": 2200.0,
             "outer_wall_jerk": 2.0,
             "inner_wall_jerk": 2.0,
-            "wall_loops": 0.0,
-            "top_shell_layers": 0.0,
-            "bottom_shell_layers": 0.0,
             "sparse_infill_density": 5.0,
             "fan_min_speed": 25.0,
             "fan_max_speed": 25.0,
@@ -251,7 +248,6 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             "filament_retraction_length": 0.40,
             "filament_retraction_speed": 15.0,
             "filament_deretraction_speed": 15.0,
-            "support_threshold_angle": 10.0,
             "support_interface_spacing": 0.30,
             "line_width": 0.10,
             "outer_wall_line_width": 0.10,
@@ -372,9 +368,6 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             "nozzle_temperature_initial_layer": 12.0,
             "hot_plate_temp": 12.0,
             "hot_plate_temp_initial_layer": 12.0,
-            "wall_loops": 0.0,
-            "top_shell_layers": 1.0,
-            "bottom_shell_layers": 1.0,
             "sparse_infill_density": 10.0,
             "fan_min_speed": 35.0,
             "fan_max_speed": 35.0,
@@ -386,7 +379,6 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             "filament_retraction_length": 0.50,
             "filament_retraction_speed": 20.0,
             "filament_deretraction_speed": 20.0,
-            "support_threshold_angle": 12.0,
             "support_interface_spacing": 0.40,
             "line_width": 0.10,
             "outer_wall_line_width": 0.10,
@@ -529,6 +521,8 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             _parse_flat_value(petgcf_hq_medium_overrides["inner_wall_speed"]),
         )
         self.assertEqual(petgcf_hq_medium_overrides["wall_loops"], "2")
+        self.assertEqual(petgcf_hq_medium_overrides["top_shell_layers"], "2")
+        self.assertEqual(petgcf_hq_medium_overrides["bottom_shell_layers"], "2")
         self.assertEqual(petgcf_hq_medium_overrides["sparse_infill_density"], "25%")
 
         pla_hs = resolved_by_case["pla_04_hs_medium_strength"]["process_overrides"]
@@ -594,3 +588,126 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             _parse_flat_value(petgcf_hs["bridge_speed"]),
             _parse_flat_value(petgcf_hq_medium_overrides["bridge_speed"]),
         )
+
+    def test_strength_factor_drives_shell_counts(self):
+        _logger.info("starting shell-count strength theory verification")
+        printer = load_printer_spec("megemaster")
+        material = load_material_spec("petg_cf_generic")
+        nozzle = NozzleSetup(
+            diameter_mm=0.6,
+            hardened=True,
+            high_flow=True,
+        )
+
+        cases = [
+            (0.0, "1"),
+            (0.5, "2"),
+            (1.0, "4"),
+        ]
+
+        for strength_factor, expected_shells in cases:
+            with self.subTest(strength_factor=strength_factor):
+                resolved = resolve_process_data(
+                    printer=printer,
+                    material=material,
+                    nozzle=nozzle,
+                    intent=IntentSpec(
+                        strength_factor=strength_factor,
+                        quality_factor=0.5,
+                    ),
+                )
+                overrides = resolved["process_overrides"]
+                _logger.info(
+                    "shell-count case strength_factor=%s -> wall_loops=%s top_shell_layers=%s bottom_shell_layers=%s",
+                    strength_factor,
+                    overrides["wall_loops"],
+                    overrides["top_shell_layers"],
+                    overrides["bottom_shell_layers"],
+                )
+                self.assertEqual(overrides["wall_loops"], expected_shells)
+                self.assertEqual(overrides["top_shell_layers"], expected_shells)
+                self.assertEqual(overrides["bottom_shell_layers"], expected_shells)
+
+    def test_petgcf_06_support_policy_matches_verified_z_axis_behavior(self):
+        _logger.info("starting PETG-CF 0.6 support policy verification")
+        resolved = resolve_process_data_from_specs(
+            printer_id="megemaster",
+            material_name="petg_cf_generic",
+            nozzle=NozzleSetup(diameter_mm=0.6, hardened=True, high_flow=True),
+            intent=IntentSpec(strength_factor=0.5, quality_factor=0.4),
+        )
+
+        overrides = resolved["process_overrides"]
+        self.assertEqual(overrides["support_interface_spacing"], "1")
+        self.assertEqual(overrides["support_object_xy_distance"], "3")
+        self.assertEqual(overrides["support_on_build_plate_only"], "1")
+        self.assertEqual(overrides["support_threshold_angle"], "25")
+        self.assertEqual(overrides["support_top_z_distance"], "0.40")
+
+    def test_supports_default_to_build_plate_only_for_all_materials(self):
+        _logger.info("starting support-on-build-plate-only default verification")
+        cases = [
+            (
+                "creality_pla_hs",
+                NozzleSetup(diameter_mm=0.4, hardened=False, high_flow=False),
+                IntentSpec(strength_factor=0.5, quality_factor=0.5),
+            ),
+            (
+                "petg_cf_generic",
+                NozzleSetup(diameter_mm=0.6, hardened=True, high_flow=True),
+                IntentSpec(strength_factor=0.5, quality_factor=0.4),
+            ),
+            (
+                "esun_tpu_95a",
+                NozzleSetup(diameter_mm=0.6, hardened=True, high_flow=True),
+                IntentSpec(strength_factor=0.4, quality_factor=0.0),
+            ),
+        ]
+
+        printer = load_printer_spec("megemaster")
+        for material_name, nozzle, intent in cases:
+            with self.subTest(material_name=material_name):
+                resolved = resolve_process_data(
+                    printer=printer,
+                    material=load_material_spec(material_name),
+                    nozzle=nozzle,
+                    intent=intent,
+                )
+                self.assertEqual(
+                    resolved["process_overrides"]["support_on_build_plate_only"],
+                    "1",
+                )
+
+    def test_support_threshold_angle_defaults_to_25_for_all_materials(self):
+        _logger.info("starting support-threshold-angle default verification")
+        cases = [
+            (
+                "creality_pla_hs",
+                NozzleSetup(diameter_mm=0.4, hardened=False, high_flow=False),
+                IntentSpec(strength_factor=0.5, quality_factor=0.5),
+            ),
+            (
+                "petg_cf_generic",
+                NozzleSetup(diameter_mm=0.6, hardened=True, high_flow=True),
+                IntentSpec(strength_factor=0.5, quality_factor=0.4),
+            ),
+            (
+                "esun_tpu_95a",
+                NozzleSetup(diameter_mm=0.6, hardened=True, high_flow=True),
+                IntentSpec(strength_factor=0.4, quality_factor=0.0),
+            ),
+        ]
+
+        printer = load_printer_spec("megemaster")
+        for material_name, nozzle, intent in cases:
+            with self.subTest(material_name=material_name):
+                resolved = resolve_process_data(
+                    printer=printer,
+                    material=load_material_spec(material_name),
+                    nozzle=nozzle,
+                    intent=intent,
+                )
+                self.assertEqual(
+                    resolved["process_overrides"]["support_threshold_angle"],
+                    "25",
+                )

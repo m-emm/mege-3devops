@@ -73,7 +73,7 @@ _FAMILY_RULES = {
         "retraction_speed": 35.0,
         "deretraction_speed": 30.0,
         "infill_wall_overlap_pct": 20.0,
-        "support_threshold_angle": 55.0,
+        "support_threshold_angle": 25.0,
         "support_interface_spacing": 1.2,
         "initial_layer_speed": 20.0,
         "initial_layer_infill_speed": 20.0,
@@ -97,7 +97,7 @@ _FAMILY_RULES = {
         "retraction_speed": 25.0,
         "deretraction_speed": 25.0,
         "infill_wall_overlap_pct": 30.0,
-        "support_threshold_angle": 45.0,
+        "support_threshold_angle": 25.0,
         "support_interface_spacing": 1.0,
         "initial_layer_speed": 40.0,
         "initial_layer_infill_speed": 60.0,
@@ -121,7 +121,7 @@ _FAMILY_RULES = {
         "retraction_speed": 35.0,
         "deretraction_speed": 30.0,
         "infill_wall_overlap_pct": 20.0,
-        "support_threshold_angle": 50.0,
+        "support_threshold_angle": 25.0,
         "support_interface_spacing": 1.0,
         "initial_layer_speed": 25.0,
         "initial_layer_infill_speed": 35.0,
@@ -152,6 +152,15 @@ def _format_number(value: float, digits: int = 2) -> str:
 
 def _format_percent(value: float) -> str:
     return f"{int(round(value))}%"
+
+
+def _strength_shell_count(strength: float) -> int:
+    # Quadratic strength theory anchored to:
+    # 0.0 -> 1 shell
+    # 0.5 -> 2 shells
+    # 1.0 -> 4 shells
+    shell_count = round(2.0 * strength * strength + strength + 1.0)
+    return int(_clamp(shell_count, 1, 4))
 
 
 def _load_yaml_mapping(path: Path) -> dict[str, Any]:
@@ -430,17 +439,15 @@ def resolve_process_data(
         infill_density,
     )
 
-    if material.family == "TPU":
-        wall_loops = 2
-    elif nozzle.diameter_mm <= 0.4:
-        wall_loops = 2
-    else:
-        wall_loops = 1
+    wall_loops = _strength_shell_count(strength)
+    top_shell_layers = _strength_shell_count(strength)
+    bottom_shell_layers = _strength_shell_count(strength)
     _logger.info(
-        "wall loop theory: family=%s nozzle_diameter=%.2f -> wall_loops=%s",
-        material.family,
-        nozzle.diameter_mm,
+        "shell count theory: strength=%.3f -> wall_loops=%s top_shell_layers=%s bottom_shell_layers=%s",
+        strength,
         wall_loops,
+        top_shell_layers,
+        bottom_shell_layers,
     )
 
     fan_min_speed = 100.0 * material.cooling_factor * (1.0 - material.warp_factor)
@@ -485,12 +492,17 @@ def resolve_process_data(
     support_object_xy_distance = 0.3 + 0.35 * material.support_stickiness
     support_object_xy_distance += max(0.0, nozzle.diameter_mm - 0.4) * 0.5
     support_object_xy_distance = round(support_object_xy_distance, 2)
+    support_on_build_plate_only = 1
+    if material.family == "PETG_CF" and nozzle.diameter_mm >= 0.6:
+        support_object_xy_distance = max(support_object_xy_distance, 3.0)
     _logger.info(
-        "support theory: support_stickiness=%.3f nozzle_diameter=%.2f -> top_z=%.2f object_xy=%.2f",
+        "support theory: support_stickiness=%.3f nozzle_diameter=%.2f family=%s -> top_z=%.2f object_xy=%.2f build_plate_only=%s",
         material.support_stickiness,
         nozzle.diameter_mm,
+        material.family,
         support_top_z_distance,
         support_object_xy_distance,
+        support_on_build_plate_only,
     )
 
     bridge_speed_cap = family_rules["bridge_speed_cap_at_04"]
@@ -528,8 +540,10 @@ def resolve_process_data(
         + max(0.0, nozzle.diameter_mm - 0.4) * 0.5,
         2,
     )
+    if material.family == "PETG_CF" and nozzle.diameter_mm >= 0.6:
+        support_interface_spacing = round(family_rules["support_interface_spacing"], 2)
     _logger.info(
-        "bridging/overhang/support policy: bridge_speed=%s bridge_speed_cap=%.2f overhang_fan=%s fan_cooling_layer_time=%s slow_down_for_layer_cooling=%s slow_down_layer_time=%s support_threshold_angle=%s support_interface_spacing=%.2f",
+        "bridging/overhang/support policy: bridge_speed=%s bridge_speed_cap=%.2f overhang_fan=%s fan_cooling_layer_time=%s slow_down_for_layer_cooling=%s slow_down_layer_time=%s support_threshold_angle=%s support_interface_spacing=%.2f support_on_build_plate_only=%s",
         bridge_speed,
         bridge_speed_cap,
         overhang_fan_speed,
@@ -538,6 +552,7 @@ def resolve_process_data(
         slow_down_layer_time,
         support_threshold_angle,
         support_interface_spacing,
+        support_on_build_plate_only,
     )
 
     flow_ratio = 1.0
@@ -646,8 +661,8 @@ def resolve_process_data(
             "outer_wall_jerk": _format_number(outer_jerk, digits=0),
             "inner_wall_jerk": _format_number(inner_jerk, digits=0),
             "wall_loops": _format_number(wall_loops, digits=0),
-            "top_shell_layers": "4",
-            "bottom_shell_layers": "3",
+            "top_shell_layers": _format_number(top_shell_layers, digits=0),
+            "bottom_shell_layers": _format_number(bottom_shell_layers, digits=0),
             "sparse_infill_density": _format_percent(infill_density),
             "infill_wall_overlap": _format_percent(infill_wall_overlap),
             "fan_min_speed": _format_number(fan_min_speed, digits=0),
@@ -660,6 +675,9 @@ def resolve_process_data(
             "slow_down_layer_time": _format_number(slow_down_layer_time, digits=0),
             "support_top_z_distance": _format_number(support_top_z_distance),
             "support_object_xy_distance": _format_number(support_object_xy_distance),
+            "support_on_build_plate_only": _format_number(
+                support_on_build_plate_only, digits=0
+            ),
             "support_threshold_angle": _format_number(
                 support_threshold_angle, digits=0
             ),

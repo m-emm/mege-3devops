@@ -497,9 +497,11 @@ PROCESS_DATA_PETGCF_06_HS["process_overrides"].update(
         "max_bridge_length": "6",
         "thick_bridges": "0",
         "thick_internal_bridges": "0",
-        # Larger nozzle support clearances, following PETG 06 geometry.
+        # Larger PETG-CF structural parts need much looser support release on 0.6mm.
         "support_top_z_distance": "0.40",
-        "support_object_xy_distance": "0.6",
+        "support_object_xy_distance": "3.0",
+        "support_on_build_plate_only": "1",
+        "support_threshold_angle": "25",
         "support_interface_spacing": "1.0",
         # Hole closure rises with 0.6mm, keep the PETG 06 compensation.
         "xy_hole_compensation": "0.06",
