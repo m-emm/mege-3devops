@@ -72,6 +72,8 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             "support_threshold_angle",
             "brim_type",
             "wall_loops",
+            "enable_pressure_advance",
+            "pressure_advance",
         ):
             self.assertIn(key, resolved["process_overrides"])
 
@@ -100,6 +102,55 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         self.assertIn("support_interface_spacing", resolved["process_overrides"])
         self.assertIn("overhang_fan_speed", resolved["process_overrides"])
         self.assertIn("initial_layer_infill_speed", resolved["process_overrides"])
+        self.assertEqual(resolved["process_overrides"]["enable_pressure_advance"], "1")
+
+    def test_pressure_advance_theory_hits_known_legacy_high_speed_anchors(self):
+        _logger.info("starting pressure-advance anchor verification")
+        printer = load_printer_spec("megemaster")
+        cases = [
+            (
+                "pla_04_hq_anchor",
+                "creality_pla_hs",
+                NozzleSetup(diameter_mm=0.4, hardened=False, high_flow=False),
+                IntentSpec(strength_factor=0.33, quality_factor=0.70),
+                0.02,
+            ),
+            (
+                "pla_06_hs_anchor",
+                "creality_pla_hs",
+                NozzleSetup(diameter_mm=0.6, hardened=True, high_flow=True),
+                IntentSpec(strength_factor=0.67, quality_factor=0.40),
+                0.04,
+            ),
+            (
+                "pla_08_hs_anchor",
+                "creality_pla_hs",
+                NozzleSetup(diameter_mm=0.8, hardened=True, high_flow=True),
+                IntentSpec(strength_factor=0.67, quality_factor=0.25),
+                0.05,
+            ),
+        ]
+
+        for name, material_name, nozzle, intent, expected in cases:
+            with self.subTest(case=name):
+                resolved = resolve_process_data(
+                    printer=printer,
+                    material=load_material_spec(material_name),
+                    nozzle=nozzle,
+                    intent=intent,
+                )
+                overrides = resolved["process_overrides"]
+                actual = _parse_flat_value(overrides["pressure_advance"])
+                _logger.info(
+                    "pressure-advance case=%s expected=%s actual=%s overrides=%s",
+                    name,
+                    expected,
+                    actual,
+                    overrides,
+                )
+                self.assertEqual(overrides["enable_pressure_advance"], "1")
+                self.assertEqual(overrides["adaptive_pressure_advance"], "0")
+                self.assertAlmostEqual(actual, expected, delta=0.001)
 
     def test_volumetric_flow_reproduces_full_legacy_range(self):
         _logger.info("starting volumetric flow theory test")
@@ -359,6 +410,8 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             "support_threshold_angle",
             "support_interface_spacing",
             "filament_max_volumetric_speed",
+            "enable_pressure_advance",
+            "pressure_advance",
             "brim_type",
             "brim_width",
         }
@@ -642,7 +695,7 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         self.assertEqual(overrides["support_object_xy_distance"], "3")
         self.assertEqual(overrides["support_on_build_plate_only"], "1")
         self.assertEqual(overrides["support_threshold_angle"], "25")
-        self.assertEqual(overrides["support_top_z_distance"], "0.40")
+        self.assertEqual(overrides["support_top_z_distance"], "0.47")
 
     def test_supports_default_to_build_plate_only_for_all_materials(self):
         _logger.info("starting support-on-build-plate-only default verification")

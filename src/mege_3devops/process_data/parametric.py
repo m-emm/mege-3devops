@@ -83,6 +83,11 @@ _FAMILY_RULES = {
         "brim_type": "outer_only",
         "brim_width": 4.0,
         "brim_object_gap": 0.0,
+        "pressure_advance_base": 0.020,
+        "pressure_advance_nozzle_gain_per_02mm": 0.010,
+        "pressure_advance_throughput_gain": 0.005,
+        "pressure_advance_high_flow_bonus": 0.005,
+        "pressure_advance_max": 0.060,
     },
     "TPU": {
         "outer_speed_ceiling": 130.0,
@@ -107,6 +112,11 @@ _FAMILY_RULES = {
         "brim_type": "outer_only",
         "brim_width": 3.0,
         "brim_object_gap": 0.0,
+        "pressure_advance_base": 0.010,
+        "pressure_advance_nozzle_gain_per_02mm": 0.005,
+        "pressure_advance_throughput_gain": 0.0025,
+        "pressure_advance_high_flow_bonus": 0.0025,
+        "pressure_advance_max": 0.030,
     },
     "PETG_CF": {
         "outer_speed_ceiling": 180.0,
@@ -131,6 +141,11 @@ _FAMILY_RULES = {
         "brim_type": "no_brim",
         "brim_width": 6.0,
         "brim_object_gap": 0.0,
+        "pressure_advance_base": 0.015,
+        "pressure_advance_nozzle_gain_per_02mm": 0.0075,
+        "pressure_advance_throughput_gain": 0.005,
+        "pressure_advance_high_flow_bonus": 0.005,
+        "pressure_advance_max": 0.045,
     },
 }
 
@@ -161,6 +176,40 @@ def _strength_shell_count(strength: float) -> int:
     # 1.0 -> 4 shells
     shell_count = round(2.0 * strength * strength + strength + 1.0)
     return int(_clamp(shell_count, 1, 4))
+
+
+def _pressure_advance_value(
+    *,
+    material_family: str,
+    nozzle: NozzleSetup,
+    throughput: float,
+    family_rules: dict[str, float | str],
+) -> float:
+    base = float(family_rules["pressure_advance_base"])
+    nozzle_gain = float(family_rules["pressure_advance_nozzle_gain_per_02mm"])
+    throughput_gain = float(family_rules["pressure_advance_throughput_gain"])
+    high_flow_bonus = float(family_rules["pressure_advance_high_flow_bonus"])
+    max_value = float(family_rules["pressure_advance_max"])
+
+    pressure_advance = base
+    pressure_advance += nozzle_gain * max(0.0, nozzle.diameter_mm - 0.4) / 0.2
+    pressure_advance += throughput_gain * throughput
+    pressure_advance += high_flow_bonus if nozzle.high_flow else 0.0
+    pressure_advance = _clamp(pressure_advance, base, max_value)
+    pressure_advance = _round_step(pressure_advance, 0.005)
+    _logger.info(
+        "pressure advance theory: family=%s base=%.3f nozzle_gain=%.4f throughput_gain=%.4f high_flow_bonus=%.4f nozzle_diameter=%.2f throughput=%.3f high_flow=%s -> pressure_advance=%.3f",
+        material_family,
+        base,
+        nozzle_gain,
+        throughput_gain,
+        high_flow_bonus,
+        nozzle.diameter_mm,
+        throughput,
+        nozzle.high_flow,
+        pressure_advance,
+    )
+    return pressure_advance
 
 
 def _load_yaml_mapping(path: Path) -> dict[str, Any]:
@@ -610,8 +659,14 @@ def resolve_process_data(
     detect_overhang_wall = 0 if material.family == "TPU" else 1
     enable_overhang_speed = detect_overhang_wall
     enable_support = 0
+    pressure_advance = _pressure_advance_value(
+        material_family=material.family,
+        nozzle=nozzle,
+        throughput=throughput,
+        family_rules=family_rules,
+    )
     _logger.info(
-        "adhesion/retraction/policy theory: retraction_length=%.2f retraction_speed=%s deretraction_speed=%s infill_wall_overlap=%s brim_type=%s brim_width=%s initial_layer_speed=%s initial_layer_infill_speed=%s",
+        "adhesion/retraction/policy theory: retraction_length=%.2f retraction_speed=%s deretraction_speed=%s infill_wall_overlap=%s brim_type=%s brim_width=%s initial_layer_speed=%s initial_layer_infill_speed=%s pressure_advance=%.3f",
         retraction_length,
         retraction_speed,
         deretraction_speed,
@@ -620,6 +675,7 @@ def resolve_process_data(
         brim_width,
         initial_layer_speed,
         initial_layer_infill_speed,
+        pressure_advance,
     )
 
     result = {
@@ -688,6 +744,11 @@ def resolve_process_data(
             "filament_retraction_length": _format_number(retraction_length),
             "filament_retraction_speed": _format_number(retraction_speed, digits=0),
             "filament_deretraction_speed": _format_number(deretraction_speed, digits=0),
+            "enable_pressure_advance": "1",
+            "pressure_advance": _format_number(pressure_advance, digits=3),
+            "adaptive_pressure_advance": "0",
+            "adaptive_pressure_advance_bridges": "0",
+            "adaptive_pressure_advance_overhangs": "0",
             "filament_flow_ratio": _format_number(flow_ratio),
             "filament_max_volumetric_speed": _format_number(
                 max_volumetric_flow, digits=0
