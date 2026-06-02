@@ -122,7 +122,7 @@ PROCESS_DATA_PLA_06["process_overrides"].update(  # curently optimized for bed a
         "support_interface_top_layers": "2",  # Add interface layers for easier removal
         "support_interface_bottom_layers": "2",  # Add bottom interface layers
         "support_interface_pattern": "rectilinear",  # Better for removal than grid
-        "support_interface_spacing": "0.8",  # Less dense interface for easier removal
+        "support_interface_spacing": "0.8",  # on Orca UI, this is Top interface spacing; less dense interface for easier removal
         "support_object_xy_distance": "0.5",  # Increased from base 0.35 for easier removal
         "support_top_z_distance": "0.3",  # Increased from base 0.2 for easier removal
     }

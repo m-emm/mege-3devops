@@ -110,7 +110,7 @@ PROCESS_DATA_PLA_06_HS["process_overrides"].update(
         "support_interface_bottom_layers": "1",
         "support_threshold_angle": "65",  # 55→65: fewer supports, PLA can bridge more
         "support_interface_pattern": "rectilinear",
-        "support_interface_spacing": "2.0",  # 1.5→2.0: faster interface printing
+        "support_interface_spacing": "2.0",  # on Orca UI, this is Top interface spacing; 1.5→2.0: faster interface printing
         "support_object_xy_distance": "0.8",  # 0.7→0.8: easier removal, less contact
         "support_top_z_distance": "0.36",  # match layer height for clean separation
         # NEW: Reduce support density for speed
@@ -404,7 +404,7 @@ PROCESS_DATA_PLACF_06_HS["process_overrides"].update(
         "support_threshold_angle": "50",
         "support_top_z_distance": "0.40",
         "support_object_xy_distance": "0.6",
-        "support_interface_spacing": "1.0",
+        "support_interface_spacing": "1.0",  # on Orca UI, this is Top interface spacing
         "xy_hole_compensation": "0.06",
         "xy_contour_compensation": "0",
         "elefant_foot_compensation": "0.10",
@@ -502,7 +502,7 @@ PROCESS_DATA_PETGCF_06_HS["process_overrides"].update(
         "support_object_xy_distance": "3.0",
         "support_on_build_plate_only": "1",
         "support_threshold_angle": "25",
-        "support_interface_spacing": "1.0",
+        "support_interface_spacing": "1.0",  # on Orca UI, this is Top interface spacing
         # Hole closure rises with 0.6mm, keep the PETG 06 compensation.
         "xy_hole_compensation": "0.06",
         # Slightly denser for the stiffer CF parts.

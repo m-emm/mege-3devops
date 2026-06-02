@@ -186,7 +186,7 @@ PROCESS_DATA_PLA_04_HP["process_overrides"].update(
         "support_interface_bottom_layers": "1",
         "support_threshold_angle": "55",
         "support_interface_pattern": "rectilinear",
-        "support_interface_spacing": "1.2",
+        "support_interface_spacing": "1.2",  # on Orca UI, this is Top interface spacing
         "support_object_xy_distance": "0.6",
         "support_top_z_distance": "0.25",
     }

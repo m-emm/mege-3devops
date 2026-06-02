@@ -77,7 +77,7 @@ PROCESS_DATA_PLA_08_HS["process_overrides"].update(
         "support_interface_bottom_layers": "1",
         "support_threshold_angle": "65",
         "support_interface_pattern": "rectilinear",
-        "support_interface_spacing": "2.2",
+        "support_interface_spacing": "2.2",  # on Orca UI, this is Top interface spacing
         "support_interface_speed": "160",
         "support_speed": "270",
         "support_object_xy_distance": "0.9",
@@ -231,7 +231,7 @@ PROCESS_DATA_PETG_08_HS["process_overrides"].update(
         "support_interface_top_layers": "1",
         "support_interface_bottom_layers": "1",
         "support_interface_pattern": "rectilinear",
-        "support_interface_spacing": "1.5",
+        "support_interface_spacing": "1.5",  # on Orca UI, this is Top interface spacing
         "support_interface_speed": "150",
         "support_speed": "220",
         "support_object_xy_distance": "0.5",

@@ -74,7 +74,7 @@ _FAMILY_RULES = {
         "deretraction_speed": 30.0,
         "infill_wall_overlap_pct": 20.0,
         "support_threshold_angle": 25.0,
-        "support_interface_spacing": 1.2,
+        "support_interface_spacing": 1.2,  # on Orca UI, this is Top interface spacing
         "initial_layer_speed": 20.0,
         "initial_layer_infill_speed": 20.0,
         "overhang_fan_multiplier": 1.0,
@@ -103,7 +103,7 @@ _FAMILY_RULES = {
         "deretraction_speed": 25.0,
         "infill_wall_overlap_pct": 30.0,
         "support_threshold_angle": 25.0,
-        "support_interface_spacing": 1.0,
+        "support_interface_spacing": 1.0,  # on Orca UI, this is Top interface spacing
         "initial_layer_speed": 40.0,
         "initial_layer_infill_speed": 60.0,
         "overhang_fan_multiplier": 2.0,
@@ -132,7 +132,7 @@ _FAMILY_RULES = {
         "deretraction_speed": 30.0,
         "infill_wall_overlap_pct": 20.0,
         "support_threshold_angle": 25.0,
-        "support_interface_spacing": 1.0,
+        "support_interface_spacing": 1.0,  # on Orca UI, this is Top interface spacing
         "initial_layer_speed": 25.0,
         "initial_layer_infill_speed": 35.0,
         "overhang_fan_multiplier": 1.17,
@@ -737,7 +737,9 @@ def resolve_process_data(
             "support_threshold_angle": _format_number(
                 support_threshold_angle, digits=0
             ),
-            "support_interface_spacing": _format_number(support_interface_spacing),
+            "support_interface_spacing": _format_number(
+                support_interface_spacing
+            ),  # on Orca UI, this is Top interface spacing
             "enable_support": _format_number(enable_support, digits=0),
             "detect_overhang_wall": _format_number(detect_overhang_wall, digits=0),
             "enable_overhang_speed": _format_number(enable_overhang_speed, digits=0),

@@ -43,7 +43,7 @@ PROCESS_DATA_PLA_04_HS["process_overrides"].update(
         "support_interface_bottom_layers": "1",
         "support_threshold_angle": "55",
         "support_interface_pattern": "rectilinear",
-        "support_interface_spacing": "1.2",
+        "support_interface_spacing": "1.2",  # on Orca UI, this is Top interface spacing
         "support_object_xy_distance": "0.6",
         "support_top_z_distance": "0.25",
         # ADHESION IMPROVEMENTS:
@@ -244,7 +244,7 @@ PROCESS_DATA_PETG_04_HS["process_overrides"].update(
         # Support tuning - PETG sticks to supports, need more distance
         "support_top_z_distance": "0.35",
         "support_object_xy_distance": "0.5",
-        "support_interface_spacing": "1.0",
+        "support_interface_spacing": "1.0",  # on Orca UI, this is Top interface spacing
         # Hole compensation (PETG shrinks slightly)
         "xy_hole_compensation": "0.04",
         # Infill
@@ -340,7 +340,7 @@ PROCESS_DATA_PETGCF_04_HS["process_overrides"].update(
         # Support tuning - same clearances as PETG
         "support_top_z_distance": "0.35",
         "support_object_xy_distance": "0.5",
-        "support_interface_spacing": "1.0",
+        "support_interface_spacing": "1.0",  # on Orca UI, this is Top interface spacing
         # Dimensional tweaks
         "xy_hole_compensation": "0.04",
         # Infill - slightly denser for stiff CF parts
