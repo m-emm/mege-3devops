@@ -1,0 +1,15 @@
+printer_id: mege_ender_3v3ke_idex
+max_speed_xy_mm_s: 60.0
+max_accel_xy_mm_s2: 300.0
+max_jerk_xy_mm_s: 5.0
+hotend_base_flow_mm3_s: 8.0
+min_layer_height_ratio: 0.25
+max_layer_height_ratio: 0.75
+print_host: menderpi.local:7125
+printable_x_min_mm: 155.0
+printable_x_max_mm: 295.0
+printable_y_min_mm: 55.0
+printable_y_max_mm: 305.0
+printable_z_max_mm: 295.0
+active_carriage: xleft
+nozzle_diameter_mm: 0.4

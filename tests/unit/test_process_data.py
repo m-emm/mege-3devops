@@ -1,6 +1,22 @@
+import json
 import logging
+from pathlib import Path
+import tempfile
 import unittest
 
+from shellforgepy.slicing.orca_slicer_settings_generator import generate_settings
+
+from mege_3devops.process_data.mege_ender_3v3ke_idex import (
+    MASTER_SETTINGS_DIR,
+    PROCESS_DATA_PLA_04_COLD_BED_FIRST_PRINT,
+    SAFE_BED_DEPTH_MM,
+    SAFE_BED_ORIGIN,
+    SAFE_BED_WIDTH_MM,
+    SAFE_X_MAX_MM,
+    SAFE_X_MIN_MM,
+    SAFE_Y_MAX_MM,
+    SAFE_Y_MIN_MM,
+)
 from mege_3devops.process_data.mender3.process_data_04_high_precision import (
     PROCESS_DATA_PLA_04_HP,
 )
@@ -29,10 +45,29 @@ from mege_3devops.process_data.parametric import (
 
 _logger = logging.getLogger(__name__)
 
+BED_TEMP_KEYS = (
+    "hot_plate_temp",
+    "hot_plate_temp_initial_layer",
+    "cool_plate_temp",
+    "cool_plate_temp_initial_layer",
+    "eng_plate_temp",
+    "eng_plate_temp_initial_layer",
+    "supertack_plate_temp",
+    "supertack_plate_temp_initial_layer",
+    "textured_cool_plate_temp",
+    "textured_cool_plate_temp_initial_layer",
+    "textured_plate_temp",
+    "textured_plate_temp_initial_layer",
+)
+
 
 def _parse_flat_value(value):
     if value is None:
         return None
+    if isinstance(value, list):
+        if not value:
+            return None
+        value = value[0]
     if isinstance(value, (int, float)):
         return float(value)
     if value.endswith("%"):
@@ -103,6 +138,127 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         self.assertIn("overhang_fan_speed", resolved["process_overrides"])
         self.assertIn("initial_layer_infill_speed", resolved["process_overrides"])
         self.assertEqual(resolved["process_overrides"]["enable_pressure_advance"], "1")
+
+    def test_mege_ender_idex_live_spec_caps_motion_to_safe_limits(self):
+        _logger.info("starting Mege Ender 3 V3 KE IDEX live spec test")
+        printer = load_printer_spec("mege_ender_3v3ke_idex")
+        resolved = resolve_process_data_from_specs(
+            printer_id="mege_ender_3v3ke_idex",
+            material_name="creality_pla_hs",
+            nozzle=NozzleSetup(diameter_mm=0.4, hardened=False, high_flow=False),
+            intent=IntentSpec(strength_factor=0.5, quality_factor=0.0),
+        )
+        overrides = resolved["process_overrides"]
+
+        self.assertEqual(printer.printer_id, "mege_ender_3v3ke_idex")
+        self.assertEqual(printer.print_host, "menderpi.local:7125")
+        self.assertEqual(printer.active_carriage, "xleft")
+        self.assertEqual(printer.nozzle_diameter_mm, 0.4)
+        self.assertEqual(printer.printable_x_min_mm, SAFE_X_MIN_MM)
+        self.assertEqual(printer.printable_x_max_mm, SAFE_X_MAX_MM)
+        self.assertEqual(printer.printable_y_min_mm, SAFE_Y_MIN_MM)
+        self.assertEqual(printer.printable_y_max_mm, SAFE_Y_MAX_MM)
+        self.assertEqual(printer.printable_z_max_mm, 295.0)
+
+        for key in (
+            "outer_wall_speed",
+            "external_perimeter_speed",
+            "top_surface_speed",
+            "inner_wall_speed",
+            "sparse_infill_speed",
+            "bridge_speed",
+            "initial_layer_speed",
+            "initial_layer_infill_speed",
+        ):
+            self.assertLessEqual(_parse_flat_value(overrides[key]), 60.0)
+
+        self.assertEqual(overrides["outer_wall_acceleration"], "300")
+        self.assertEqual(overrides["inner_wall_acceleration"], "300")
+        self.assertEqual(overrides["outer_wall_jerk"], "5")
+        self.assertEqual(overrides["inner_wall_jerk"], "5")
+
+    def test_mege_ender_idex_first_print_process_is_cold_bed(self):
+        process_data = PROCESS_DATA_PLA_04_COLD_BED_FIRST_PRINT
+        overrides = process_data["process_overrides"]
+
+        self.assertEqual(
+            process_data["filament"], "FilamentCrealityPLAHighSpeedTunedForSpeed"
+        )
+        self.assertEqual(MASTER_SETTINGS_DIR.name, "settings_master")
+        self.assertTrue(MASTER_SETTINGS_DIR.exists())
+        self.assertEqual(SAFE_BED_ORIGIN, (155.0, 55.0))
+        self.assertEqual(SAFE_BED_WIDTH_MM, 140.0)
+        self.assertEqual(SAFE_BED_DEPTH_MM, 250.0)
+
+        for key in BED_TEMP_KEYS:
+            self.assertEqual(overrides[key], "0")
+
+        self.assertEqual(overrides["enable_support"], "0")
+        self.assertEqual(overrides["brim_type"], "outer_only")
+        self.assertEqual(overrides["enable_pressure_advance"], "0")
+        self.assertEqual(overrides["pressure_advance"], "0")
+        self.assertEqual(overrides["travel_speed"], "60")
+        self.assertEqual(overrides["default_acceleration"], "300")
+
+    def test_mege_ender_idex_master_settings_generate_safe_orca_json(self):
+        with tempfile.TemporaryDirectory() as temp_dir_name:
+            temp_dir = Path(temp_dir_name)
+            part_file = temp_dir / "dummy.stl"
+            part_file.write_text("solid dummy\nendsolid dummy\n", encoding="utf-8")
+            process_data = dict(PROCESS_DATA_PLA_04_COLD_BED_FIRST_PRINT)
+            process_data["part_file"] = str(part_file)
+
+            process_data_path = temp_dir / "process_data.json"
+            process_data_path.write_text(
+                json.dumps(process_data),
+                encoding="utf-8",
+            )
+
+            artifacts = generate_settings(
+                process_data_file=process_data_path,
+                output_dir=temp_dir,
+                master_settings_dir=MASTER_SETTINGS_DIR,
+            )
+
+            machine_settings = json.loads(
+                Path(artifacts["machine_settings_path"]).read_text(encoding="utf-8")
+            )
+            process_settings = json.loads(
+                Path(artifacts["process_settings_path"]).read_text(encoding="utf-8")
+            )
+            filament_settings = json.loads(
+                Path(artifacts["filament_settings_paths"][0]).read_text(
+                    encoding="utf-8"
+                )
+            )
+            print_host = Path(artifacts["print_host_path"]).read_text(
+                encoding="utf-8"
+            )
+
+        self.assertEqual(
+            machine_settings["printable_area"],
+            ["155x55", "295x55", "295x305", "155x305"],
+        )
+        self.assertEqual(machine_settings["printable_height"], "295")
+        self.assertEqual(machine_settings["print_host"], "menderpi.local:7125")
+        self.assertEqual(print_host, "menderpi.local:7125")
+
+        machine_gcode = (
+            machine_settings["machine_start_gcode"]
+            + "\n"
+            + machine_settings["machine_end_gcode"]
+        )
+        self.assertNotIn("M140", machine_gcode)
+        self.assertNotIn("M190", machine_gcode)
+        self.assertNotIn("heater_bed", machine_gcode)
+        self.assertNotIn("X-", machine_gcode)
+        self.assertIn("IDEX_SELECT_LEFT", machine_gcode)
+        self.assertIn("G1 X165 Y65", machine_gcode)
+        self.assertIn("G1 X170 Y65", machine_gcode)
+
+        for key in BED_TEMP_KEYS:
+            self.assertIn(process_settings.get(key, "0"), (None, "0"))
+            self.assertEqual(_parse_flat_value(filament_settings[key]), 0.0)
 
     def test_pressure_advance_theory_hits_known_legacy_high_speed_anchors(self):
         _logger.info("starting pressure-advance anchor verification")

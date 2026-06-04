@@ -1,136 +1,153 @@
 # === 0_Metadata ===
 compatible_printers:
-  - MegeMasterMachine
+  - MegeEnder3V3KEIDEX
 from: system
-instantiation: 'true'
-is_custom_defined: '0'
-name: FilamenteSunTPU95A
-setting_id: GMMMA
-flament_id: GMMMA_3
+instantiation: "true"
+is_custom_defined: "0"
+name: FilamentCrealityPLAHighSpeedTunedForSpeed
+setting_id: ME3VIDEX_PLA_COLD
+flament_id: ME3VIDEX_PLA_COLD_1
 type: filament
 version: 2.0.2.0
 
+# === Cooling / Auxiliary part cooling fan ===
+additional_cooling_fan_speed:
+  - "70"
+
 # === Cooling / Cooling for specific layer ===
 close_fan_the_first_x_layers:
-  - '1'
+  - "1"
 full_fan_speed_layer:
-  - '1'
+  - "0"
 
 # === Cooling / Part cooling fan ===
 overhang_fan_speed:
-  - '30'
+  - "100"
 overhang_fan_threshold:
-  - 25%
+  - 50%
 reduce_fan_stop_start_freq:
-  - '1'
+  - "1"
 slow_down_for_layer_cooling:
-  - '1'
+  - "0"
 slow_down_min_speed:
-  - '10'
+  - "20"
 
 # === Filament / Basic information ===
 default_filament_colour:
-  - '#00FF00'
+  - "#FF0000"
+
 filament_cost:
-  - '23'
+  - "18"
 filament_density:
-  - '1.20'
+  - "1.24"
 filament_diameter:
-  - '1.75'
+  - "1.75"
 filament_soluble:
-  - '0'
+  - "0"
 filament_vendor:
-  - eSun
+  - Generic
 temperature_vitrification:
-  - '30'
+  - "60"
 
 # === Filament / Flow ratio and Pressure Advance ===
 filament_flow_ratio:
-  - '1.00'
-# Pressure Advance for TPU - OFF by default, enable via process_overrides
-# TPU typical value: 0.01 (lower than rigid filaments due to compressibility)
+  - "1.0"
+# Pressure Advance (Linear Advance) - OFF by default, enable via process_overrides for high-speed profiles
+# Value tuned for Ender 3V3 KE with Micro Swiss hotend: 0.02
+# Typical range: 0.01-0.06 for direct drive
 enable_pressure_advance:
-  - '0'
+  - "0"
 pressure_advance:
-  - '0.01'
+  - "0.02"
 adaptive_pressure_advance:
-  - '0'
+  - "0"
 adaptive_pressure_advance_bridges:
-  - '0'
+  - "0"
 adaptive_pressure_advance_overhangs:
-  - '0'
+  - "0"
 
 # === Filament / Volumetric speed limitation ===
 filament_max_volumetric_speed:
-  - '4'
+  - "8"
 
 # === Multimaterial / Wipe tower parameters ===
 filament_minimal_purge_on_wipe_tower:
-  - '15'
+  - "15"
 
-# === Uncategorized ===
+# === Bed Temperature Configuration ===
+# Strategy: the live IDEX bring-up printer currently has no configured heatbed
+# heater. Keep all plate temperatures at zero so generated G-code does not
+# command bed heating.
 bed_type:
-  - Cool Plate
+  - Textured Plate
 cool_plate_temp:
-  - '40'
+  - "0"
 cool_plate_temp_initial_layer:
-  - '40'
+  - "0"
 eng_plate_temp:
-  - '40'
+  - "0"
 eng_plate_temp_initial_layer:
-  - '40'
+  - "0"
+supertack_plate_temp:
+  - "0"
+supertack_plate_temp_initial_layer:
+  - "0"
 fan_cooling_layer_time:
-  - '30'
+  - "100"
 fan_max_speed:
-  - '30'
+  - "100"
 fan_min_speed:
-  - '20'
+  - "100"
 filament_deretraction_speed:
-  - '10'
+  - nil
 filament_end_gcode:
   - "; filament end gcode \n"
-filament_id: GFTPU95
+filament_id: ME3VIDEXPLA
 filament_retract_before_wipe:
-  - '0'
+  - nil
 filament_retract_restart_extra:
-  - '0'
+  - nil
 filament_retract_when_changing_layer:
-  - '0'
+  - nil
 filament_retraction_length:
-  - '0.8'
+  - nil
 filament_retraction_minimum_travel:
-  - '2'
+  - nil
 filament_retraction_speed:
-  - '10'
+  - nil
 filament_settings_id:
-  - eSun TPU 95A
+  - PLA Cold Bed @Mege Ender 3 V3 KE IDEX
 filament_start_gcode:
   - "; filament start gcode\n"
 filament_type:
-  - TPU
+  - PLA
 filament_wipe:
-  - '0'
+  - nil
 filament_wipe_distance:
-  - '0'
+  - nil
 filament_z_hop:
-  - '0.3'
+  - nil
 filament_z_hop_types:
-  - 'retract_lift'
+  - nil
 hot_plate_temp:
-  - '40'
+  - "0"
 hot_plate_temp_initial_layer:
-  - '45'
+  - "0"
 nozzle_temperature:
-  - '230'
+  - "200"
 nozzle_temperature_initial_layer:
-  - '230'
+  - "205"
 nozzle_temperature_range_high:
-  - '240'
+  - "230"
 nozzle_temperature_range_low:
-  - '215'
+  - "190"
 slow_down_layer_time:
-  - '6'
+  - "8"
+textured_cool_plate_temp:
+  - "0"
+textured_cool_plate_temp_initial_layer:
+  - "0"
 textured_plate_temp:
-  - '40'
+  - "0"
 textured_plate_temp_initial_layer:
-  - '45'
+  - "0"

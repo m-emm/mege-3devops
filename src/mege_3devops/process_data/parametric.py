@@ -21,6 +21,14 @@ class PrinterSpec:
     hotend_base_flow_mm3_s: float
     min_layer_height_ratio: float = 0.25
     max_layer_height_ratio: float = 0.75
+    print_host: str | None = None
+    printable_x_min_mm: float | None = None
+    printable_x_max_mm: float | None = None
+    printable_y_min_mm: float | None = None
+    printable_y_max_mm: float | None = None
+    printable_z_max_mm: float | None = None
+    active_carriage: str | None = None
+    nozzle_diameter_mm: float | None = None
 
 
 @dataclass(frozen=True)
@@ -438,8 +446,9 @@ def resolve_process_data(
     )
 
     family_inner_multiplier = family_rules["inner_speed_multiplier"]
+    max_print_speed_xy = min(250.0, printer.max_speed_xy_mm_s)
     inner_speed = round(
-        _clamp(outer_speed * family_inner_multiplier, outer_speed, 250.0)
+        _clamp(outer_speed * family_inner_multiplier, outer_speed, max_print_speed_xy)
     )
     top_surface_speed = outer_speed
     sparse_infill_speed = inner_speed
@@ -455,9 +464,11 @@ def resolve_process_data(
     outer_acceleration = 1200.0 + (family_outer_accel_ceiling - 1200.0) * (
         throughput**2
     )
-    outer_acceleration = round(_clamp(outer_acceleration, 800.0, 8000.0))
+    max_accel_xy = max(1.0, float(printer.max_accel_xy_mm_s2))
+    min_accel_xy = min(800.0, max_accel_xy)
+    outer_acceleration = round(_clamp(outer_acceleration, min_accel_xy, max_accel_xy))
     inner_acceleration = round(
-        _clamp(outer_acceleration * 1.6, outer_acceleration, 8000.0)
+        _clamp(outer_acceleration * 1.6, outer_acceleration, max_accel_xy)
     )
     _logger.info(
         "acceleration theory: family_outer_ceiling=%.1f throughput=%.3f -> outer=%s inner=%s",
@@ -471,6 +482,8 @@ def resolve_process_data(
     family_inner_jerk_ceiling = family_rules["inner_jerk_ceiling"]
     outer_jerk = round(5.0 + (family_outer_jerk_ceiling - 5.0) * throughput)
     inner_jerk = round(8.0 + (family_inner_jerk_ceiling - 8.0) * throughput)
+    outer_jerk = round(_clamp(outer_jerk, 1.0, printer.max_jerk_xy_mm_s))
+    inner_jerk = round(_clamp(inner_jerk, 1.0, printer.max_jerk_xy_mm_s))
     _logger.info(
         "jerk theory: outer_ceiling=%.1f inner_ceiling=%.1f throughput=%.3f -> outer=%s inner=%s",
         family_outer_jerk_ceiling,
