@@ -40,6 +40,21 @@ mege-3devops
 A longer description of your project goes here...
 
 
+Mege Ender 3 V3 KE IDEX Print Areas
+====================================
+
+The live IDEX conversion currently has two slicer-facing X envelopes:
+
+* T0 single-tool prints may use ``X=-30..244``.
+* Dual tool-switch prints must use the shared area ``X=0..244``.
+* Both modes use ``Y=0..290`` and ``Z=0..294``.
+
+The generic ``SAFE_*`` constants in
+``mege_3devops.process_data.mege_ender_3v3ke_idex`` intentionally refer to
+the dual tool-switch area. T0-only jobs should use the explicit
+``T0_SINGLE_*`` constants or ``T0_SINGLE_PRINT_AREA``.
+
+
 .. _pyscaffold-notes:
 
 Note

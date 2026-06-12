@@ -27,6 +27,10 @@ class PrinterSpec:
     printable_y_min_mm: float | None = None
     printable_y_max_mm: float | None = None
     printable_z_max_mm: float | None = None
+    single_t0_printable_x_min_mm: float | None = None
+    single_t0_printable_x_max_mm: float | None = None
+    dual_toolswitch_printable_x_min_mm: float | None = None
+    dual_toolswitch_printable_x_max_mm: float | None = None
     active_carriage: str | None = None
     nozzle_diameter_mm: float | None = None
 

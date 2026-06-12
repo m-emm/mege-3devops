@@ -27,24 +27,24 @@ extruder_clearance_radius: "90"
 
 # === Basic information / Printable space ===
 printable_area:
-  - 155x55
-  - 295x55
-  - 295x305
-  - 155x305
+  - 0x0
+  - 244x0
+  - 244x290
+  - 0x290
 
 # === General / Size and coordinates ===
-printable_height: "295"
+printable_height: "294"
 
 # === Machine limits ===
 machine_max_acceleration_extruding:
-  - "300"
-  - "300"
+  - "2000"
+  - "2000"
 machine_max_acceleration_retracting:
-  - "300"
-  - "300"
+  - "2000"
+  - "2000"
 machine_max_acceleration_travel:
-  - "300"
-  - "300"
+  - "2000"
+  - "2000"
 machine_min_extruding_rate:
   - "0"
   - "0"
@@ -58,51 +58,69 @@ machine_load_filament_time: "11"
 # === Multimaterial / Layer height limits ===
 max_layer_height:
   - "0.32"
+  - "0.32"
 min_layer_height:
+  - "0.08"
   - "0.08"
 
 # === Multimaterial / Position ===
 extruder_offset:
   - "0x0"
+  - "0x0"
 
 # === Multimaterial / Retraction ===
 deretraction_speed:
   - "0"
+  - "0"
 retract_before_wipe:
+  - 100%
   - 100%
 retract_restart_extra:
   - "0"
+  - "0"
 retract_when_changing_layer:
+  - "1"
   - "1"
 retraction_length:
   - "0.5"
+  - "0.5"
 retraction_minimum_travel:
+  - "2"
   - "2"
 retraction_speed:
   - "30"
+  - "30"
 wipe:
   - "1"
+  - "1"
 wipe_distance:
+  - "2"
   - "2"
 
 # === Multimaterial / Retraction when switching material ===
 retract_length_toolchange:
   - "1"
+  - "1"
 retract_restart_extra_toolchange:
   - "0"
+  - "0"
 
-# === Multimaterial / Single extruder multi-material setup ===
-manual_filament_change: "1"
-single_extruder_multi_material: "1"
+# === Multimaterial / Physical IDEX toolchanger setup ===
+manual_filament_change: "0"
+single_extruder_multi_material: "0"
 
 # === Multimaterial / Size ===
 nozzle_diameter:
+  - "0.4"
   - "0.4"
 
 # === Multimaterial / Z-Hop ===
 z_hop:
   - "0.2"
-z_hop_types: Normal Lift
+  - "0.2"
+z_hop_types:
+  - Normal Lift
+  - Normal Lift
 
 # === Uncategorized ===
 bed_exclude_area:
@@ -112,34 +130,42 @@ before_layer_change_gcode: |
   ;[layer_z]
 
   G92 E0
-change_filament_gcode: M600
+change_filament_gcode: ""
 default_filament_profile:
   - FilamentCrealityPLAHighSpeedTunedForSpeed
+  - FilamentCrealityPLAHighSpeedTunedForSpeedT1
 default_print_profile: ProcessMegeEnder3V3KEIDEXColdBed
 extruder_clearance_max_radius: "90"
 extruder_colour:
-  - "#FCE94F"
+  - "#FF0000"
+  - "#0066FF"
 layer_change_gcode: |
   SET_PRINT_STATS_INFO CURRENT_LAYER={layer_num + 1}
 machine_end_gcode: |-
   G92 E0 ; Reset extruder
-  G91 ; Relative positioning
-  G1 E-1.2 Z5 F600 ; Retract and lift within live Z speed limit
+  G1 E-1.2 F1200 ; Retract before lift and parking
   G90 ; Absolute positioning
-  G1 X225 Y180 F1800 ; Present print inside temporary safe zone
+  {if max_layer_z < printable_height}
+  G1 Z{min(max_layer_z+150, printable_height)} F480 ; Lift print clear, capped at Z max
+  {endif}
   M106 S0 ;Turn-off fan
-  M104 S0 ;Turn-off hotend
+  T0 ;Park right carriage, select and park left carriage
+  M104 S0 ;Turn-off left hotend
+  T1 ;Park left carriage, select and park right carriage
+  M104 S0 ;Turn-off right hotend
+  T0 ;Leave both carriages parked, left tool active
+  M140 S0 ;Turn-off bed
 
   M84 X Y E ;Disable all steppers but Z
 machine_max_acceleration_e:
   - "300"
   - "300"
 machine_max_acceleration_x:
-  - "300"
-  - "300"
+  - "2000"
+  - "2000"
 machine_max_acceleration_y:
-  - "300"
-  - "300"
+  - "2000"
+  - "2000"
 machine_max_acceleration_z:
   - "30"
   - "30"
@@ -159,11 +185,11 @@ machine_max_speed_e:
   - "40"
   - "40"
 machine_max_speed_x:
-  - "60"
-  - "60"
+  - "180"
+  - "180"
 machine_max_speed_y:
-  - "60"
-  - "60"
+  - "180"
+  - "180"
 machine_max_speed_z:
   - "8"
   - "8"
@@ -173,23 +199,56 @@ machine_start_gcode: |-
   M220 S100 ;Reset Feedrate
   M221 S100 ;Reset Flowrate
 
+  M140 S[bed_temperature_initial_layer_single] ;Start bed heating
   G28 ;Home
-  IDEX_SELECT_LEFT ;Activate and park the left carriage for this bring-up identity
   G90 ;Absolute positioning
   M82 ;Absolute extrusion
+  G1 Y10 F1800 ;Leave Y endstop before applying tool offsets
 
-  G92 E0 ;Reset Extruder
-  M104 S[nozzle_temperature_initial_layer] ;Set final nozzle temp
+  {if is_extruder_used[0]}M104 S{first_layer_temperature[0]} T0 ;Preheat left hotend without tool select
+  {endif}
+  {if is_extruder_used[1]}M104 S{first_layer_temperature[1]} T1 ;Preheat right hotend without tool select
+  {endif}
+
   G1 Z2.0 F480 ;Move Z Axis inside current live limit
-  G1 X165 Y65 F1800 ;Move to safe purge start
-  M109 S[nozzle_temperature_initial_layer] ;Wait for nozzle temp to stabilize
+  M190 S[bed_temperature_initial_layer_single] ;Wait for bed temp to stabilize
+
+  {if is_extruder_used[0]}T0
+  G92 E0 ;Reset left extruder
+  G1 X10 Y10 F1800 ;Move to left purge start inside dual-safe zone
+  M109 S{first_layer_temperature[0]} ;Wait for left hotend
   G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X165 Y130 E8 F600 ;Draw first purge line inside safe zone
-  G1 X170 Y130 F1200 ;Step aside inside safe zone
-  G1 X170 Y65 E16 F600 ;Draw second purge line inside safe zone
-  G92 E0 ;Reset Extruder
+  G1 X10 Y70 E6 F600 ;Draw first left purge line
+  G1 X12 Y70 F1200 ;Step aside inside dual-safe zone
+  G1 X12 Y10 E12 F600 ;Draw second left purge line
+  G1 X14 Y10 F1200 ;Step aside inside dual-safe zone
+  G1 X14 Y70 E18 F600 ;Draw third left purge line
+  G1 X16 Y70 F1200 ;Step aside inside dual-safe zone
+  G1 X16 Y10 E24 F600 ;Draw fourth left purge line
+  G92 E0 ;Reset left extruder
   G1 E-0.8 F1200 ;Retract a bit
-  G1 Z2.0 F480 ;Move Z Axis up inside current live limit
+  G1 Z2.0 F480 ;Lift after left purge
+  {endif}
+
+  {if is_extruder_used[1]}T1
+  G92 E0 ;Reset right extruder
+  G1 X10 Y80 F1800 ;Move to right purge start at same X, shifted in Y
+  M109 S{first_layer_temperature[1]} ;Wait for right hotend
+  G1 Z0.28 F300 ;Lower to first layer purge height
+  G1 X10 Y140 E6 F600 ;Draw first right purge line at same X as left
+  G1 X12 Y140 F1200 ;Step aside inside dual-safe zone
+  G1 X12 Y80 E12 F600 ;Draw second right purge line at same X as left
+  G1 X14 Y80 F1200 ;Step aside inside dual-safe zone
+  G1 X14 Y140 E18 F600 ;Draw third right purge line at same X as left
+  G1 X16 Y140 F1200 ;Step aside inside dual-safe zone
+  G1 X16 Y80 E24 F600 ;Draw fourth right purge line at same X as left
+  G92 E0 ;Reset right extruder
+  G1 E-0.8 F1200 ;Retract a bit
+  G1 Z2.0 F480 ;Lift after right purge
+  {endif}
+
+  T{initial_tool}
+  G92 E0 ;Reset active extruder
   G1 E0.0000 F1200
 print_host: menderpi.local:7125
 printer_technology: FFF

@@ -17,7 +17,11 @@ standby_temperature_delta: '-5'
 
 # === Multimaterial / Prime tower ===
 enable_prime_tower: '0'
-prime_tower_width: '60'
+prime_tower_width: '35'
+prime_tower_brim_width: '3'
+purge_in_prime_tower: '1'
+wipe_tower_x: '200'
+wipe_tower_y: '220'
 wipe_tower_no_sparse_layers: '0'
 
 # === Others / G-code output ===
@@ -143,19 +147,19 @@ wipe_on_loops: '0'
 wipe_before_external_loop: '0'
 
 # === Speed ===
-bridge_speed: '15'
+bridge_speed: '35'
 # internal_bridge_speed: percentage of bridge_speed or absolute value
 internal_bridge_speed: 150%
 # external_perimeter_speed: legacy/test-visible Orca key, keep routable for flat overrides
-external_perimeter_speed: '35'
+external_perimeter_speed: '80'
 # gap_fill_speed: legacy/test-visible Orca key, keep routable for flat overrides
-gap_fill_speed: '40'
-gap_infill_speed: '40'
-inner_wall_speed: '45'
+gap_fill_speed: '70'
+gap_infill_speed: '70'
+inner_wall_speed: '120'
 # solid_infill_speed: legacy/test-visible Orca key, keep routable for flat overrides
-solid_infill_speed: '45'
-internal_solid_infill_speed: '45'
-outer_wall_speed: '35'
+solid_infill_speed: '120'
+internal_solid_infill_speed: '120'
+outer_wall_speed: '80'
 overhang_1_4_speed: '0'
 overhang_2_4_speed: '50'
 overhang_3_4_speed: '35'
@@ -163,10 +167,10 @@ overhang_4_4_speed: '10'
 slowdown_for_curled_perimeters: '1'
 # dont_slow_down_outer_wall: 0=allow slowdown, 1=never slow outer wall
 dont_slow_down_outer_wall: '0'
-sparse_infill_speed: '45'
+sparse_infill_speed: '150'
 support_interface_speed: 100%
-support_speed: '35'
-top_surface_speed: '35'
+support_speed: '80'
+top_surface_speed: '70'
 # small_perimeter_speed: percentage of outer_wall_speed or absolute value
 small_perimeter_speed: 50%
 # small_perimeter_threshold: perimeter length in mm below which small_perimeter_speed applies (0 = disabled)
@@ -175,22 +179,22 @@ small_perimeter_threshold: '0'
 # === Speed / Acceleration ===
 accel_to_decel_enable: '0'
 accel_to_decel_factor: 100%
-default_acceleration: '300'
-initial_layer_acceleration: '300'
-inner_wall_acceleration: '300'
-outer_wall_acceleration: '300'
-top_surface_acceleration: '300'
-travel_acceleration: '300'
+default_acceleration: '2000'
+initial_layer_acceleration: '500'
+inner_wall_acceleration: '2000'
+outer_wall_acceleration: '1000'
+top_surface_acceleration: '1000'
+travel_acceleration: '2000'
 # sparse_infill_acceleration: percentage of default_acceleration or absolute value
-sparse_infill_acceleration: '300'
+sparse_infill_acceleration: '2000'
 # internal_solid_infill_acceleration: percentage of default_acceleration or absolute value
-internal_solid_infill_acceleration: '300'
+internal_solid_infill_acceleration: '2000'
 # bridge_acceleration: percentage of default_acceleration or absolute value
-bridge_acceleration: '300'
+bridge_acceleration: '800'
 
 # === Speed / Initial layer speed ===
-initial_layer_infill_speed: '20'
-initial_layer_speed: '15'
+initial_layer_infill_speed: '35'
+initial_layer_speed: '25'
 # initial_layer_travel_speed: percentage of travel_speed or absolute value
 initial_layer_travel_speed: 100%
 
@@ -204,7 +208,7 @@ top_surface_jerk: '5'
 travel_jerk: '5'
 
 # === Speed / Travel speed ===
-travel_speed: '60'
+travel_speed: '180'
 # travel_speed_z: Z-axis travel speed in mm/s (0 = use firmware default)
 travel_speed_z: '0'
 

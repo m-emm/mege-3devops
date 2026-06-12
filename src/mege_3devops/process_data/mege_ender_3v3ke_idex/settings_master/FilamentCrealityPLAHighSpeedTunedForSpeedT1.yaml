@@ -4,9 +4,9 @@ compatible_printers:
 from: system
 instantiation: "true"
 is_custom_defined: "0"
-name: FilamentCrealityPLAHighSpeedTunedForSpeed
-setting_id: ME3VIDEX_PLA_COLD
-flament_id: ME3VIDEX_PLA_COLD_1
+name: FilamentCrealityPLAHighSpeedTunedForSpeedT1
+setting_id: ME3VIDEX_PLA_COLD_T1
+flament_id: ME3VIDEX_PLA_COLD_2
 type: filament
 version: 2.0.2.0
 
@@ -34,7 +34,7 @@ slow_down_min_speed:
 
 # === Filament / Basic information ===
 default_filament_colour:
-  - "#FF0000"
+  - "#0066FF"
 
 filament_cost:
   - "18"
@@ -102,7 +102,7 @@ filament_deretraction_speed:
   - nil
 filament_end_gcode:
   - "; filament end gcode \n"
-filament_id: ME3VIDEXPLA
+filament_id: ME3VIDEXPLA_T1
 filament_retract_before_wipe:
   - nil
 filament_retract_restart_extra:
@@ -116,7 +116,7 @@ filament_retraction_minimum_travel:
 filament_retraction_speed:
   - nil
 filament_settings_id:
-  - PLA Cold Bed @Mege Ender 3 V3 KE IDEX
+  - PLA Cold Bed T1 @Mege Ender 3 V3 KE IDEX
 filament_start_gcode:
   - "; filament start gcode\n"
 filament_type:
