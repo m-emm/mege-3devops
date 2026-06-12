@@ -13,7 +13,7 @@ type: process
 version: 2.0.2.0
 
 # === Multimaterial / Ooze prevention ===
-standby_temperature_delta: '-5'
+standby_temperature_delta: '0'
 
 # === Multimaterial / Prime tower ===
 enable_prime_tower: '0'

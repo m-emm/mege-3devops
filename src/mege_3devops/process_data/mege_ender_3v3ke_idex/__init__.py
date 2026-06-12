@@ -192,7 +192,7 @@ def dual_pla_04_offset_calibration_process_data() -> dict:
             "wipe_tower_x": "200",
             "wipe_tower_y": "220",
             "wipe_tower_no_sparse_layers": "0",
-            "standby_temperature_delta": "-5",
+            "standby_temperature_delta": "0",
         }
     )
     return process_data
