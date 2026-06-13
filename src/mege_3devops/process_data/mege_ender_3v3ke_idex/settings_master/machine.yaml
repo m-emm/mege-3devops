@@ -215,22 +215,22 @@ machine_start_gcode: |-
 
   {if initial_tool==0}T0
   G92 E0 ;Reset left extruder
-  G1 X10 Y10 F1800 ;Move to left purge start inside dual-safe zone
+  G1 X10 Y-8 F1800 ;Move to left front purge start in physical bed margin
   M109 S{first_layer_temperature[0]} ;Wait for left hotend
   G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X10 Y70 E6 F600 ;Draw first left purge line
+  G1 X70 Y-8 E6 F600 ;Draw first left front purge line
   G1 Z0.60 F480 ;Lift before travel to next left purge line
-  G1 X12 Y10 F1800 ;Travel to second left purge start
+  G1 X10 Y-6 F1800 ;Travel to second left front purge start
   G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X12 Y70 E12 F600 ;Draw second left purge line
+  G1 X70 Y-6 E12 F600 ;Draw second left front purge line
   G1 Z0.60 F480 ;Lift before travel to next left purge line
-  G1 X14 Y10 F1800 ;Travel to third left purge start
+  G1 X10 Y-4 F1800 ;Travel to third left front purge start
   G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X14 Y70 E18 F600 ;Draw third left purge line
+  G1 X70 Y-4 E18 F600 ;Draw third left front purge line
   G1 Z0.60 F480 ;Lift before travel to next left purge line
-  G1 X16 Y10 F1800 ;Travel to fourth left purge start
+  G1 X10 Y-2 F1800 ;Travel to fourth left front purge start
   G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X16 Y70 E24 F600 ;Draw fourth left purge line
+  G1 X70 Y-2 E24 F600 ;Draw fourth left front purge line
   G92 E0 ;Reset left extruder
   G1 E-0.8 F1200 ;Retract a bit
   G1 Z2.0 F480 ;Lift after left purge
@@ -238,22 +238,22 @@ machine_start_gcode: |-
 
   {if initial_tool==1}T1
   G92 E0 ;Reset right extruder
-  G1 X10 Y80 F1800 ;Move to right purge start at same X, shifted in Y
+  G1 X10 Y-8 F1800 ;Move to right front purge start in physical bed margin
   M109 S{first_layer_temperature[1]} ;Wait for right hotend
   G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X10 Y140 E6 F600 ;Draw first right purge line at same X as left
+  G1 X70 Y-8 E6 F600 ;Draw first right front purge line
   G1 Z0.60 F480 ;Lift before travel to next right purge line
-  G1 X12 Y80 F1800 ;Travel to second right purge start
+  G1 X10 Y-6 F1800 ;Travel to second right front purge start
   G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X12 Y140 E12 F600 ;Draw second right purge line at same X as left
+  G1 X70 Y-6 E12 F600 ;Draw second right front purge line
   G1 Z0.60 F480 ;Lift before travel to next right purge line
-  G1 X14 Y80 F1800 ;Travel to third right purge start
+  G1 X10 Y-4 F1800 ;Travel to third right front purge start
   G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X14 Y140 E18 F600 ;Draw third right purge line at same X as left
+  G1 X70 Y-4 E18 F600 ;Draw third right front purge line
   G1 Z0.60 F480 ;Lift before travel to next right purge line
-  G1 X16 Y80 F1800 ;Travel to fourth right purge start
+  G1 X10 Y-2 F1800 ;Travel to fourth right front purge start
   G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X16 Y140 E24 F600 ;Draw fourth right purge line at same X as left
+  G1 X70 Y-2 E24 F600 ;Draw fourth right front purge line
   G92 E0 ;Reset right extruder
   G1 E-0.8 F1200 ;Retract a bit
   G1 Z2.0 F480 ;Lift after right purge

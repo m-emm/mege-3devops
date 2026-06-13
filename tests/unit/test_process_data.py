@@ -296,7 +296,7 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             machine_start_gcode.index(
                 "G1 Y10 F1800 ;Leave Y endstop before applying tool offsets"
             ),
-            machine_start_gcode.index("{if is_extruder_used[1]}T1"),
+            machine_start_gcode.index("{if initial_tool==1}T1"),
         )
         self.assertIn(
             "M104 S{first_layer_temperature[0]} T0",
@@ -310,14 +310,27 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             "T1\nM104 S{first_layer_temperature[1]}",
             machine_start_gcode,
         )
+        self.assertIn("{if initial_tool==0}T0", machine_start_gcode)
+        self.assertIn("{if initial_tool==1}T1", machine_start_gcode)
+        self.assertNotIn("{if is_extruder_used[0]}T0", machine_start_gcode)
+        self.assertNotIn("{if is_extruder_used[1]}T1", machine_start_gcode)
         self.assertIn("T0", machine_gcode)
         self.assertIn("T1", machine_gcode)
-        self.assertIn("G1 X10 Y10", machine_gcode)
-        self.assertIn("G1 X10 Y80", machine_gcode)
-        self.assertIn("G1 X10 Y140", machine_gcode)
-        self.assertIn("G1 X12 Y80", machine_gcode)
-        self.assertIn("G1 X16 Y10 E24 F600", machine_start_gcode)
-        self.assertIn("G1 X16 Y80 E24 F600", machine_start_gcode)
+        self.assertEqual(machine_start_gcode.count("G1 X10 Y-8 F1800"), 2)
+        self.assertEqual(machine_start_gcode.count("G1 X70 Y-8 E6 F600"), 2)
+        self.assertEqual(machine_start_gcode.count("G1 X10 Y-6 F1800"), 2)
+        self.assertEqual(machine_start_gcode.count("G1 X70 Y-6 E12 F600"), 2)
+        self.assertEqual(machine_start_gcode.count("G1 X10 Y-4 F1800"), 2)
+        self.assertEqual(machine_start_gcode.count("G1 X70 Y-4 E18 F600"), 2)
+        self.assertEqual(machine_start_gcode.count("G1 X10 Y-2 F1800"), 2)
+        self.assertEqual(machine_start_gcode.count("G1 X70 Y-2 E24 F600"), 2)
+        self.assertIn("G1 Z0.60 F480 ;Lift before travel", machine_start_gcode)
+        self.assertNotIn("G1 X10 Y70 E6 F600", machine_start_gcode)
+        self.assertNotIn("G1 X10 Y140 E6 F600", machine_start_gcode)
+        self.assertNotIn("G1 X12 Y70 E12 F600", machine_start_gcode)
+        self.assertNotIn("G1 X12 Y140 E12 F600", machine_start_gcode)
+        self.assertNotIn("G1 X16 Y70 E24 F600", machine_start_gcode)
+        self.assertNotIn("G1 X16 Y140 E24 F600", machine_start_gcode)
         self.assertNotIn("G1 X24 Y10", machine_gcode)
         self.assertIn("G1 Z{min(max_layer_z+150, printable_height)}", machine_gcode)
         self.assertIn("T0 ;Park right carriage", machine_gcode)
@@ -389,6 +402,7 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         self.assertEqual(process_settings["wipe_tower_x"], "200")
         self.assertEqual(process_settings["wipe_tower_y"], "220")
         self.assertEqual(process_settings["wipe_tower_no_sparse_layers"], "0")
+        self.assertEqual(process_settings["standby_temperature_delta"], "0")
         for key in BED_TEMP_KEYS:
             self.assertEqual(
                 process_data["process_overrides"][key], str(PLA_EXAMPLE_BED_TEMP_C)
