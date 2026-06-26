@@ -67,11 +67,82 @@ BED_TEMP_OVERRIDE_KEYS = (
     "textured_plate_temp_initial_layer",
 )
 
+OFFSET_CALIBRATION_SPEED_FACTOR = 2.5
+OFFSET_CALIBRATION_ACCELERATION_FACTOR = 1.25
+OFFSET_CALIBRATION_ACCELERATION_CAP = 2000.0
+
+OFFSET_CALIBRATION_SPEED_OVERRIDE_KEYS = (
+    "outer_wall_speed",
+    "external_perimeter_speed",
+    "top_surface_speed",
+    "inner_wall_speed",
+    "sparse_infill_speed",
+    "internal_solid_infill_speed",
+    "solid_infill_speed",
+    "gap_fill_speed",
+    "gap_infill_speed",
+    "travel_speed",
+    "bridge_speed",
+    "initial_layer_speed",
+    "initial_layer_infill_speed",
+)
+
+OFFSET_CALIBRATION_ACCELERATION_OVERRIDE_KEYS = (
+    "initial_layer_acceleration",
+    "outer_wall_acceleration",
+    "top_surface_acceleration",
+    "bridge_acceleration",
+)
+
+OFFSET_CALIBRATION_MACHINE_SPEED_OVERRIDES = {
+    "machine_max_speed_x": "450",
+    "machine_max_speed_y": "450",
+}
+
+
+def _format_slicer_number(value: float) -> str:
+    return f"{value:g}"
+
+
+def _scale_numeric_override(
+    overrides: dict,
+    key: str,
+    factor: float,
+    *,
+    cap: float | None = None,
+) -> None:
+    value = float(overrides[key]) * factor
+    if cap is not None:
+        value = min(value, cap)
+    overrides[key] = _format_slicer_number(value)
+
 
 def _set_all_plate_bed_temperatures(process_data: dict, temp_c: int) -> None:
     process_data["process_overrides"].update(
         {key: str(temp_c) for key in BED_TEMP_OVERRIDE_KEYS}
     )
+
+
+def _tune_offset_calibration_for_speed(process_data: dict) -> None:
+    overrides = process_data["process_overrides"]
+
+    for key in OFFSET_CALIBRATION_SPEED_OVERRIDE_KEYS:
+        _scale_numeric_override(overrides, key, OFFSET_CALIBRATION_SPEED_FACTOR)
+
+    for key in OFFSET_CALIBRATION_ACCELERATION_OVERRIDE_KEYS:
+        _scale_numeric_override(
+            overrides,
+            key,
+            OFFSET_CALIBRATION_ACCELERATION_FACTOR,
+            cap=OFFSET_CALIBRATION_ACCELERATION_CAP,
+        )
+
+    _scale_numeric_override(
+        overrides,
+        "filament_max_volumetric_speed",
+        OFFSET_CALIBRATION_SPEED_FACTOR,
+    )
+    overrides.update(OFFSET_CALIBRATION_MACHINE_SPEED_OVERRIDES)
 
 
 def cold_bed_pla_04_first_print_process_data() -> dict:
@@ -177,6 +248,7 @@ def dual_pla_04_offset_calibration_process_data() -> dict:
     process_data["filaments"] = [T0_FILAMENT_PROFILE, T1_FILAMENT_PROFILE]
     process_data["print_area"] = copy.deepcopy(DUAL_TOOLSWITCH_PRINT_AREA)
     _set_all_plate_bed_temperatures(process_data, PLA_EXAMPLE_BED_TEMP_C)
+    _tune_offset_calibration_for_speed(process_data)
     process_data["process_overrides"].update(
         {
             "brim_type": "no_brim",
