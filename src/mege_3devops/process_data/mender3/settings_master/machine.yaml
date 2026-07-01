@@ -103,6 +103,9 @@ nozzle_diameter:
 z_hop:
   - '0.2'
 z_hop_types: Normal Lift
+retract_lift_above: '0'
+retract_lift_below: '0'
+retract_lift_enforce: All Surfaces
 
 # === Uncategorized ===
 bed_exclude_area:
@@ -203,4 +206,3 @@ silent_mode: '0'
 thumbnails:
   - 96x96
   - 300x300
-

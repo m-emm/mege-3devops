@@ -149,7 +149,7 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         self.assertIn("initial_layer_infill_speed", resolved["process_overrides"])
         self.assertEqual(resolved["process_overrides"]["enable_pressure_advance"], "1")
 
-    def test_mege_ender_idex_live_spec_caps_motion_to_safe_limits(self):
+    def test_mege_ender_idex_live_spec_matches_stock_motion_and_flow_limits(self):
         _logger.info("starting Mege Ender 3 V3 KE IDEX live spec test")
         printer = load_printer_spec("mege_ender_3v3ke_idex")
         resolved = resolve_process_data_from_specs(
@@ -169,27 +169,22 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         self.assertEqual(printer.printable_y_min_mm, SAFE_Y_MIN_MM)
         self.assertEqual(printer.printable_y_max_mm, SAFE_Y_MAX_MM)
         self.assertEqual(printer.printable_z_max_mm, SAFE_Z_MAX_MM)
+        self.assertEqual(printer.max_speed_xy_mm_s, 500.0)
+        self.assertEqual(printer.max_accel_xy_mm_s2, 8000.0)
+        self.assertEqual(printer.max_jerk_xy_mm_s, 10.0)
+        self.assertEqual(printer.hotend_base_flow_mm3_s, 15.0)
         self.assertEqual(printer.single_t0_printable_x_min_mm, T0_SINGLE_X_MIN_MM)
         self.assertEqual(printer.single_t0_printable_x_max_mm, T0_SINGLE_X_MAX_MM)
         self.assertEqual(printer.dual_toolswitch_printable_x_min_mm, SAFE_X_MIN_MM)
         self.assertEqual(printer.dual_toolswitch_printable_x_max_mm, SAFE_X_MAX_MM)
 
-        for key in (
-            "outer_wall_speed",
-            "external_perimeter_speed",
-            "top_surface_speed",
-            "inner_wall_speed",
-            "sparse_infill_speed",
-            "bridge_speed",
-            "initial_layer_speed",
-            "initial_layer_infill_speed",
-        ):
-            self.assertLessEqual(_parse_flat_value(overrides[key]), 60.0)
-
-        self.assertEqual(overrides["outer_wall_acceleration"], "300")
-        self.assertEqual(overrides["inner_wall_acceleration"], "300")
-        self.assertEqual(overrides["outer_wall_jerk"], "5")
-        self.assertEqual(overrides["inner_wall_jerk"], "5")
+        self.assertEqual(overrides["outer_wall_speed"], "200")
+        self.assertEqual(overrides["inner_wall_speed"], "250")
+        self.assertEqual(overrides["outer_wall_acceleration"], "5000")
+        self.assertEqual(overrides["inner_wall_acceleration"], "8000")
+        self.assertEqual(overrides["outer_wall_jerk"], "8")
+        self.assertEqual(overrides["inner_wall_jerk"], "10")
+        self.assertEqual(overrides["filament_max_volumetric_speed"], "15")
 
     def test_mege_ender_idex_first_print_process_is_cold_bed(self):
         process_data = PROCESS_DATA_PLA_04_COLD_BED_FIRST_PRINT
@@ -216,10 +211,16 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         self.assertEqual(overrides["brim_type"], "outer_only")
         self.assertEqual(overrides["enable_pressure_advance"], "0")
         self.assertEqual(overrides["pressure_advance"], "0")
+        self.assertEqual(overrides["filament_max_volumetric_speed"], "20")
         self.assertEqual(overrides["sparse_infill_speed"], "150")
-        self.assertEqual(overrides["travel_speed"], "180")
-        self.assertEqual(overrides["default_acceleration"], "2000")
-        self.assertEqual(overrides["initial_layer_acceleration"], "500")
+        self.assertEqual(overrides["travel_speed"], "500")
+        self.assertEqual(overrides["default_acceleration"], "8000")
+        self.assertEqual(overrides["initial_layer_acceleration"], "8000")
+        self.assertEqual(overrides["outer_wall_acceleration"], "6000")
+        self.assertEqual(overrides["inner_wall_acceleration"], "8000")
+        self.assertEqual(overrides["travel_acceleration"], "8000")
+        self.assertEqual(overrides["outer_wall_jerk"], "7")
+        self.assertEqual(overrides["inner_wall_jerk"], "10")
 
     def test_mege_ender_idex_master_settings_generate_safe_orca_json(self):
         with tempfile.TemporaryDirectory() as temp_dir_name:
@@ -260,19 +261,29 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         )
         self.assertEqual(machine_settings["printable_height"], "294")
         self.assertEqual(machine_settings["print_host"], "menderpi.local:7125")
-        self.assertEqual(machine_settings["machine_max_speed_x"], ["180", "180"])
-        self.assertEqual(machine_settings["machine_max_speed_y"], ["180", "180"])
+        self.assertEqual(machine_settings["machine_max_speed_x"], ["500", "500"])
+        self.assertEqual(machine_settings["machine_max_speed_y"], ["500", "500"])
+        self.assertEqual(machine_settings["machine_max_speed_z"], ["30", "30"])
         self.assertEqual(
-            machine_settings["machine_max_acceleration_x"], ["2000", "2000"]
+            machine_settings["machine_max_acceleration_x"], ["8000", "8000"]
         )
         self.assertEqual(
-            machine_settings["machine_max_acceleration_y"], ["2000", "2000"]
+            machine_settings["machine_max_acceleration_y"], ["8000", "8000"]
         )
+        self.assertEqual(
+            machine_settings["machine_max_acceleration_z"], ["300", "300"]
+        )
+        self.assertEqual(machine_settings["machine_max_jerk_x"], ["10", "10"])
+        self.assertEqual(machine_settings["machine_max_jerk_y"], ["10", "10"])
         self.assertEqual(print_host, "menderpi.local:7125")
         self.assertEqual(process_settings["sparse_infill_speed"], "150")
-        self.assertEqual(process_settings["travel_speed"], "180")
-        self.assertEqual(process_settings["default_acceleration"], "2000")
-        self.assertEqual(process_settings["initial_layer_acceleration"], "500")
+        self.assertEqual(process_settings["travel_speed"], "500")
+        self.assertEqual(process_settings["default_acceleration"], "8000")
+        self.assertEqual(process_settings["initial_layer_acceleration"], "8000")
+        self.assertEqual(process_settings["outer_wall_acceleration"], "6000")
+        self.assertEqual(process_settings["travel_acceleration"], "8000")
+        self.assertEqual(process_settings["default_jerk"], "10")
+        self.assertEqual(process_settings["outer_wall_jerk"], "7")
 
         machine_gcode = (
             machine_settings["machine_start_gcode"]
@@ -360,7 +371,10 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             self.assertIn(process_settings.get(key, "0"), (None, "0"))
             self.assertEqual(_parse_flat_value(filament_settings[key]), 0.0)
         self.assertEqual(
-            _parse_flat_value(filament_settings["filament_max_volumetric_speed"]), 13.0
+            _parse_flat_value(
+                filament_settings["filament_max_volumetric_speed"]
+            ),
+            20.0,
         )
 
     def test_mege_ender_idex_dual_pla_settings_generate_two_filaments(self):

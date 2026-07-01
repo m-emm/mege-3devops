@@ -68,7 +68,7 @@ adaptive_pressure_advance_overhangs:
 
 # === Filament / Volumetric speed limitation ===
 filament_max_volumetric_speed:
-  - "13"
+  - "20"
 
 # === Multimaterial / Wipe tower parameters ===
 filament_minimal_purge_on_wipe_tower:
