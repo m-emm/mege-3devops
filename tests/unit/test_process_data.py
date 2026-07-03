@@ -8,6 +8,7 @@ from mege_3devops.process_data.mege_ender_3v3ke_idex import (
     DUAL_TOOLSWITCH_PRINT_AREA,
     MASTER_SETTINGS_DIR,
     PROCESS_DATA_DUAL_PLA_04_OFFSET_CALIBRATION,
+    PROCESS_DATA_DUAL_PLA_06_OFFSET_CALIBRATION,
     PROCESS_DATA_PLA_04_COLD_BED_FIRST_PRINT,
     PLA_EXAMPLE_BED_TEMP_C,
     SAFE_BED_DEPTH_MM,
@@ -25,6 +26,7 @@ from mege_3devops.process_data.mege_ender_3v3ke_idex import (
     T0_SINGLE_X_MAX_MM,
     T0_SINGLE_X_MIN_MM,
     T1_FILAMENT_PROFILE,
+    resolve_idex_process_data_from_parameters,
 )
 from mege_3devops.process_data.mender3.process_data_04_high_precision import (
     PROCESS_DATA_PLA_04_HP,
@@ -83,6 +85,20 @@ def _parse_flat_value(value):
     if value.endswith("%"):
         return float(value[:-1])
     return float(value)
+
+
+def _assert_positive_numeric_list(testcase, values):
+    testcase.assertIsInstance(values, list)
+    testcase.assertGreater(len(values), 0)
+    for value in values:
+        testcase.assertGreater(float(value), 0.0)
+
+
+def _assert_ordered_print_area(testcase, print_area):
+    testcase.assertEqual(set(print_area), {"mode", "x_min_mm", "x_max_mm", "y_min_mm", "y_max_mm", "z_max_mm"})
+    testcase.assertLess(print_area["x_min_mm"], print_area["x_max_mm"])
+    testcase.assertLess(print_area["y_min_mm"], print_area["y_max_mm"])
+    testcase.assertGreater(print_area["z_max_mm"], 0.0)
 
 
 class ParametricProcessDataRegressionTest(unittest.TestCase):
@@ -375,6 +391,71 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
                 filament_settings["filament_max_volumetric_speed"]
             ),
             20.0,
+        )
+
+    def test_mege_ender_idex_petgcf_process_uses_idex_master_settings(self):
+        process_data = resolve_idex_process_data_from_parameters(
+            material_name="petg_cf_generic",
+            nozzle_diameter_mm=0.6,
+            nozzle_hardened=True,
+            nozzle_high_flow=True,
+            strength_factor=0.9,
+            quality_factor=0.5,
+        )
+        self.assertEqual(process_data["filament"], "FilamentPETGCF")
+        self.assertEqual(
+            process_data["master_settings_dir"],
+            MASTER_SETTINGS_DIR.resolve().as_posix(),
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir_name:
+            temp_dir = Path(temp_dir_name)
+            part_file = temp_dir / "dummy.stl"
+            part_file.write_text("solid dummy\nendsolid dummy\n", encoding="utf-8")
+            process_data = dict(process_data)
+            process_data["part_file"] = str(part_file)
+
+            process_data_path = temp_dir / "process_data.json"
+            process_data_path.write_text(
+                json.dumps(process_data),
+                encoding="utf-8",
+            )
+
+            artifacts = generate_settings(
+                process_data_file=process_data_path,
+                output_dir=temp_dir,
+                master_settings_dir=MASTER_SETTINGS_DIR,
+            )
+
+            machine_settings = json.loads(
+                Path(artifacts["machine_settings_path"]).read_text(encoding="utf-8")
+            )
+            filament_settings = json.loads(
+                Path(artifacts["filament_settings_paths"][0]).read_text(
+                    encoding="utf-8"
+                )
+            )
+            print_host = Path(artifacts["print_host_path"]).read_text(encoding="utf-8")
+
+        self.assertEqual(machine_settings["name"], "MegeEnder3V3KEIDEX")
+        self.assertEqual(machine_settings["printer_model"], "MegeEnder3V3KEIDEX")
+        self.assertEqual(machine_settings["print_host"], "menderpi.local:7125")
+        self.assertEqual(
+            machine_settings["printable_area"],
+            ["0x0", "244x0", "244x290", "0x290"],
+        )
+        self.assertEqual(machine_settings["printable_height"], "294")
+        self.assertEqual(machine_settings["retract_lift_above"], "0")
+        self.assertEqual(machine_settings["retract_lift_below"], "0")
+        self.assertEqual(machine_settings["retract_lift_enforce"], "All Surfaces")
+        self.assertEqual(print_host, "menderpi.local:7125")
+        self.assertEqual(filament_settings["name"], "FilamentPETGCF")
+        self.assertEqual(
+            filament_settings["compatible_printers"], ["MegeEnder3V3KEIDEX"]
+        )
+        self.assertEqual(
+            filament_settings["filament_settings_id"],
+            ["Generic PETG-CF @Mege Ender 3 V3 KE IDEX"],
         )
 
     def test_mege_ender_idex_dual_pla_settings_generate_two_filaments(self):

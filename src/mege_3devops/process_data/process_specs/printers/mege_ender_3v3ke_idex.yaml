@@ -16,4 +16,4 @@ single_t0_printable_x_max_mm: 244.0
 dual_toolswitch_printable_x_min_mm: 0.0
 dual_toolswitch_printable_x_max_mm: 244.0
 active_carriage: xleft
-nozzle_diameter_mm: 0.4
+nozzle_diameter_mm: 0.6

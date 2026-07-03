@@ -27,10 +27,10 @@ extruder_clearance_radius: "90"
 
 # === Basic information / Printable space ===
 printable_area:
-  - 0x0
-  - 244x0
-  - 244x290
-  - 0x290
+  - "0x0"
+  - "244x0"
+  - "244x290"
+  - "0x290"
 
 # === General / Size and coordinates ===
 printable_height: "294"
@@ -111,8 +111,8 @@ single_extruder_multi_material: "0"
 
 # === Multimaterial / Size ===
 nozzle_diameter:
-  - "0.4"
-  - "0.4"
+  - "0.6"
+  - "0.6"
 
 # === Multimaterial / Z-Hop ===
 z_hop:
@@ -121,6 +121,9 @@ z_hop:
 z_hop_types:
   - Normal Lift
   - Normal Lift
+retract_lift_above: "0"
+retract_lift_below: "0"
+retract_lift_enforce: All Surfaces
 
 # === Uncategorized ===
 bed_exclude_area:

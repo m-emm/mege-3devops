@@ -100,6 +100,13 @@ OFFSET_CALIBRATION_MACHINE_SPEED_OVERRIDES = {
 }
 
 
+def resolve_idex_process_data_from_parameters(**kwargs) -> dict:
+    kwargs.setdefault("printer_id", PRINTER_ID)
+    process_data = resolve_process_data_from_parameters(**kwargs)
+    process_data["master_settings_dir"] = MASTER_SETTINGS_DIR.resolve().as_posix()
+    return process_data
+
+
 def _format_slicer_number(value: float) -> str:
     return f"{value:g}"
 
@@ -242,6 +249,39 @@ def copy_cold_bed_pla_04_first_print_process_data() -> dict:
     return copy.deepcopy(PROCESS_DATA_PLA_04_COLD_BED_FIRST_PRINT)
 
 
+def cold_bed_pla_06_first_print_process_data() -> dict:
+    """Return cold-bed PLA settings for the current 0.6 mm IDEX nozzle setup."""
+
+    process_data = cold_bed_pla_04_first_print_process_data()
+    process_data["process_overrides"].update(
+        {
+            "layer_height": "0.3",
+            "initial_layer_print_height": "0.3",
+            "line_width": "0.65",
+            "initial_layer_line_width": "0.70",
+            "outer_wall_line_width": "0.60",
+            "inner_wall_line_width": "0.65",
+            "top_surface_line_width": "0.60",
+            "sparse_infill_line_width": "0.70",
+            "internal_solid_infill_line_width": "0.65",
+            "support_line_width": "0.65",
+            "nozzle_temperature_initial_layer": "210",
+            "nozzle_temperature": "205",
+            "bridge_speed": "30",
+            "filament_retraction_length": "1.2",
+            "elefant_foot_compensation": "0.1",
+        }
+    )
+    return process_data
+
+
+PROCESS_DATA_PLA_06_COLD_BED_FIRST_PRINT = cold_bed_pla_06_first_print_process_data()
+
+
+def copy_cold_bed_pla_06_first_print_process_data() -> dict:
+    return copy.deepcopy(PROCESS_DATA_PLA_06_COLD_BED_FIRST_PRINT)
+
+
 def dual_pla_04_offset_calibration_process_data() -> dict:
     process_data = cold_bed_pla_04_first_print_process_data()
     process_data["filament"] = T0_FILAMENT_PROFILE
@@ -285,3 +325,44 @@ def copy_dual_pla_04_offset_calibration_process_data() -> dict:
 
 def copy_cold_bed_dual_pla_04_offset_calibration_process_data() -> dict:
     return copy_dual_pla_04_offset_calibration_process_data()
+
+
+def dual_pla_06_offset_calibration_process_data() -> dict:
+    process_data = cold_bed_pla_06_first_print_process_data()
+    process_data["filament"] = T0_FILAMENT_PROFILE
+    process_data["filaments"] = [T0_FILAMENT_PROFILE, T1_FILAMENT_PROFILE]
+    process_data["print_area"] = copy.deepcopy(DUAL_TOOLSWITCH_PRINT_AREA)
+    _set_all_plate_bed_temperatures(process_data, PLA_EXAMPLE_BED_TEMP_C)
+    _tune_offset_calibration_for_speed(process_data)
+    process_data["process_overrides"].update(
+        {
+            "brim_type": "no_brim",
+            "brim_width": "0",
+            "sparse_infill_density": "100%",
+            "wall_loops": "1",
+            "top_shell_layers": "2",
+            "bottom_shell_layers": "2",
+            "enable_prime_tower": "1",
+            "prime_tower_width": "35",
+            "prime_tower_brim_width": "3",
+            "purge_in_prime_tower": "1",
+            "wipe_tower_x": "200",
+            "wipe_tower_y": "220",
+            "wipe_tower_no_sparse_layers": "0",
+            "standby_temperature_delta": "0",
+        }
+    )
+    return process_data
+
+
+PROCESS_DATA_DUAL_PLA_06_OFFSET_CALIBRATION = (
+    dual_pla_06_offset_calibration_process_data()
+)
+
+
+def copy_dual_pla_06_offset_calibration_process_data() -> dict:
+    return copy.deepcopy(PROCESS_DATA_DUAL_PLA_06_OFFSET_CALIBRATION)
+
+
+def copy_cold_bed_dual_pla_06_offset_calibration_process_data() -> dict:
+    return copy_dual_pla_06_offset_calibration_process_data()
