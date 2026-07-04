@@ -21,7 +21,7 @@ prime_tower_width: '35'
 prime_tower_brim_width: '3'
 purge_in_prime_tower: '1'
 wipe_tower_x: '200'
-wipe_tower_y: '220'
+wipe_tower_y: '15'
 wipe_tower_no_sparse_layers: '0'
 
 # === Others / G-code output ===
@@ -179,18 +179,18 @@ small_perimeter_threshold: '0'
 # === Speed / Acceleration ===
 accel_to_decel_enable: '0'
 accel_to_decel_factor: 100%
-default_acceleration: '8000'
-initial_layer_acceleration: '8000'
-inner_wall_acceleration: '8000'
-outer_wall_acceleration: '6000'
-top_surface_acceleration: '8000'
-travel_acceleration: '8000'
+default_acceleration: '3500'
+initial_layer_acceleration: '3000'
+inner_wall_acceleration: '3500'
+outer_wall_acceleration: '3000'
+top_surface_acceleration: '3000'
+travel_acceleration: '3500'
 # sparse_infill_acceleration: percentage of default_acceleration or absolute value
 sparse_infill_acceleration: 100%
 # internal_solid_infill_acceleration: percentage of default_acceleration or absolute value
 internal_solid_infill_acceleration: 100%
 # bridge_acceleration: percentage of default_acceleration or absolute value
-bridge_acceleration: 50%
+bridge_acceleration: '1750'
 
 # === Speed / Initial layer speed ===
 initial_layer_infill_speed: '105'
@@ -199,16 +199,16 @@ initial_layer_speed: '50'
 initial_layer_travel_speed: 100%
 
 # === Speed / Jerk(XY) ===
-default_jerk: '10'
-infill_jerk: '10'
-initial_layer_jerk: '10'
-inner_wall_jerk: '10'
-outer_wall_jerk: '7'
-top_surface_jerk: '10'
-travel_jerk: '10'
+default_jerk: '5'
+infill_jerk: '5'
+initial_layer_jerk: '5'
+inner_wall_jerk: '5'
+outer_wall_jerk: '5'
+top_surface_jerk: '5'
+travel_jerk: '5'
 
 # === Speed / Travel speed ===
-travel_speed: '500'
+travel_speed: '300'
 # travel_speed_z: Z-axis travel speed in mm/s (0 = use firmware default)
 travel_speed_z: '0'
 

@@ -51,6 +51,12 @@ DUAL_TOOLSWITCH_PRINT_AREA = {
 T0_FILAMENT_PROFILE = "FilamentCrealityPLAHighSpeedTunedForSpeed"
 T1_FILAMENT_PROFILE = "FilamentCrealityPLAHighSpeedTunedForSpeedT1"
 PLA_EXAMPLE_BED_TEMP_C = 60
+SAFE_XY_SPEED_MM_S = 300
+SAFE_XY_ACCEL_MM_S2 = 3500
+SAFE_XY_JERK_MM_S = 5
+DUAL_MATERIAL_Z_HOP_MM = "0.6"
+DUAL_MATERIAL_Z_HOP_TYPE = "Normal Lift"
+DUAL_MATERIAL_FILAMENT_Z_HOP_TYPE = "retract_lift"
 
 BED_TEMP_OVERRIDE_KEYS = (
     "hot_plate_temp",
@@ -67,38 +73,6 @@ BED_TEMP_OVERRIDE_KEYS = (
     "textured_plate_temp_initial_layer",
 )
 
-OFFSET_CALIBRATION_SPEED_FACTOR = 2.5
-OFFSET_CALIBRATION_ACCELERATION_FACTOR = 1.25
-OFFSET_CALIBRATION_ACCELERATION_CAP = 2000.0
-
-OFFSET_CALIBRATION_SPEED_OVERRIDE_KEYS = (
-    "outer_wall_speed",
-    "external_perimeter_speed",
-    "top_surface_speed",
-    "inner_wall_speed",
-    "sparse_infill_speed",
-    "internal_solid_infill_speed",
-    "solid_infill_speed",
-    "gap_fill_speed",
-    "gap_infill_speed",
-    "travel_speed",
-    "bridge_speed",
-    "initial_layer_speed",
-    "initial_layer_infill_speed",
-)
-
-OFFSET_CALIBRATION_ACCELERATION_OVERRIDE_KEYS = (
-    "initial_layer_acceleration",
-    "outer_wall_acceleration",
-    "top_surface_acceleration",
-    "bridge_acceleration",
-)
-
-OFFSET_CALIBRATION_MACHINE_SPEED_OVERRIDES = {
-    "machine_max_speed_x": "500",
-    "machine_max_speed_y": "500",
-}
-
 
 def resolve_idex_process_data_from_parameters(**kwargs) -> dict:
     kwargs.setdefault("printer_id", PRINTER_ID)
@@ -107,49 +81,51 @@ def resolve_idex_process_data_from_parameters(**kwargs) -> dict:
     return process_data
 
 
-def _format_slicer_number(value: float) -> str:
-    return f"{value:g}"
-
-
-def _scale_numeric_override(
-    overrides: dict,
-    key: str,
-    factor: float,
-    *,
-    cap: float | None = None,
-) -> None:
-    value = float(overrides[key]) * factor
-    if cap is not None:
-        value = min(value, cap)
-    overrides[key] = _format_slicer_number(value)
-
-
 def _set_all_plate_bed_temperatures(process_data: dict, temp_c: int) -> None:
     process_data["process_overrides"].update(
         {key: str(temp_c) for key in BED_TEMP_OVERRIDE_KEYS}
     )
 
 
-def _tune_offset_calibration_for_speed(process_data: dict) -> None:
-    overrides = process_data["process_overrides"]
-
-    for key in OFFSET_CALIBRATION_SPEED_OVERRIDE_KEYS:
-        _scale_numeric_override(overrides, key, OFFSET_CALIBRATION_SPEED_FACTOR)
-
-    for key in OFFSET_CALIBRATION_ACCELERATION_OVERRIDE_KEYS:
-        _scale_numeric_override(
-            overrides,
-            key,
-            OFFSET_CALIBRATION_ACCELERATION_FACTOR,
-            cap=OFFSET_CALIBRATION_ACCELERATION_CAP,
-        )
-
-    _scale_numeric_override(
-        overrides,
-        "filament_max_volumetric_speed",
-        OFFSET_CALIBRATION_SPEED_FACTOR,
+def _enable_dual_material_z_hop(process_data: dict) -> None:
+    process_data["process_overrides"].update(
+        {
+            "z_hop": [DUAL_MATERIAL_Z_HOP_MM, DUAL_MATERIAL_Z_HOP_MM],
+            "z_hop_types": [
+                DUAL_MATERIAL_Z_HOP_TYPE,
+                DUAL_MATERIAL_Z_HOP_TYPE,
+            ],
+            "filament_z_hop": DUAL_MATERIAL_Z_HOP_MM,
+            "filament_z_hop_types": DUAL_MATERIAL_FILAMENT_Z_HOP_TYPE,
+        }
     )
-    overrides.update(OFFSET_CALIBRATION_MACHINE_SPEED_OVERRIDES)
+
+
+def _standardize_dual_pla_process_data(process_data: dict) -> dict:
+    process_data["filament"] = T0_FILAMENT_PROFILE
+    process_data["filaments"] = [T0_FILAMENT_PROFILE, T1_FILAMENT_PROFILE]
+    process_data["print_area"] = copy.deepcopy(DUAL_TOOLSWITCH_PRINT_AREA)
+    _set_all_plate_bed_temperatures(process_data, PLA_EXAMPLE_BED_TEMP_C)
+    _enable_dual_material_z_hop(process_data)
+    process_data["process_overrides"].update(
+        {
+            "brim_type": "no_brim",
+            "brim_width": "0",
+            "sparse_infill_density": "100%",
+            "wall_loops": "1",
+            "top_shell_layers": "2",
+            "bottom_shell_layers": "2",
+            "enable_prime_tower": "1",
+            "prime_tower_width": "35",
+            "prime_tower_brim_width": "3",
+            "purge_in_prime_tower": "1",
+            "wipe_tower_x": "200",
+            "wipe_tower_y": "15",
+            "wipe_tower_no_sparse_layers": "0",
+            "standby_temperature_delta": "0",
+        }
+    )
+    return process_data
 
 
 def cold_bed_pla_04_first_print_process_data() -> dict:
@@ -204,26 +180,26 @@ def cold_bed_pla_04_first_print_process_data() -> dict:
             "solid_infill_speed": "120",
             "gap_fill_speed": "70",
             "gap_infill_speed": "70",
-            "travel_speed": "500",
+            "travel_speed": str(SAFE_XY_SPEED_MM_S),
             "bridge_speed": "35",
             "initial_layer_speed": "50",
             "initial_layer_infill_speed": "105",
-            "default_acceleration": "8000",
-            "initial_layer_acceleration": "8000",
-            "outer_wall_acceleration": "6000",
-            "inner_wall_acceleration": "8000",
-            "top_surface_acceleration": "8000",
-            "travel_acceleration": "8000",
-            "sparse_infill_acceleration": "8000",
-            "internal_solid_infill_acceleration": "8000",
-            "bridge_acceleration": "4000",
-            "default_jerk": "10",
-            "initial_layer_jerk": "10",
-            "outer_wall_jerk": "7",
-            "inner_wall_jerk": "10",
-            "top_surface_jerk": "10",
-            "travel_jerk": "10",
-            "infill_jerk": "10",
+            "default_acceleration": str(SAFE_XY_ACCEL_MM_S2),
+            "initial_layer_acceleration": "3000",
+            "outer_wall_acceleration": "3000",
+            "inner_wall_acceleration": str(SAFE_XY_ACCEL_MM_S2),
+            "top_surface_acceleration": "3000",
+            "travel_acceleration": str(SAFE_XY_ACCEL_MM_S2),
+            "sparse_infill_acceleration": str(SAFE_XY_ACCEL_MM_S2),
+            "internal_solid_infill_acceleration": str(SAFE_XY_ACCEL_MM_S2),
+            "bridge_acceleration": "1750",
+            "default_jerk": str(SAFE_XY_JERK_MM_S),
+            "initial_layer_jerk": str(SAFE_XY_JERK_MM_S),
+            "outer_wall_jerk": str(SAFE_XY_JERK_MM_S),
+            "inner_wall_jerk": str(SAFE_XY_JERK_MM_S),
+            "top_surface_jerk": str(SAFE_XY_JERK_MM_S),
+            "travel_jerk": str(SAFE_XY_JERK_MM_S),
+            "infill_jerk": str(SAFE_XY_JERK_MM_S),
             "enable_support": "0",
             "brim_type": "outer_only",
             "brim_width": "5",
@@ -282,41 +258,28 @@ def copy_cold_bed_pla_06_first_print_process_data() -> dict:
     return copy.deepcopy(PROCESS_DATA_PLA_06_COLD_BED_FIRST_PRINT)
 
 
-def dual_pla_04_offset_calibration_process_data() -> dict:
-    process_data = cold_bed_pla_04_first_print_process_data()
-    process_data["filament"] = T0_FILAMENT_PROFILE
-    process_data["filaments"] = [T0_FILAMENT_PROFILE, T1_FILAMENT_PROFILE]
-    process_data["print_area"] = copy.deepcopy(DUAL_TOOLSWITCH_PRINT_AREA)
-    _set_all_plate_bed_temperatures(process_data, PLA_EXAMPLE_BED_TEMP_C)
-    _tune_offset_calibration_for_speed(process_data)
-    process_data["process_overrides"].update(
-        {
-            "brim_type": "no_brim",
-            "brim_width": "0",
-            "sparse_infill_density": "100%",
-            "wall_loops": "1",
-            "top_shell_layers": "2",
-            "bottom_shell_layers": "2",
-            "enable_prime_tower": "1",
-            "prime_tower_width": "35",
-            "prime_tower_brim_width": "3",
-            "purge_in_prime_tower": "1",
-            "wipe_tower_x": "200",
-            "wipe_tower_y": "220",
-            "wipe_tower_no_sparse_layers": "0",
-            "standby_temperature_delta": "0",
-        }
+def dual_pla_04_standard_process_data() -> dict:
+    return _standardize_dual_pla_process_data(
+        cold_bed_pla_04_first_print_process_data()
     )
-    return process_data
+
+
+PROCESS_DATA_DUAL_PLA_04_STANDARD = dual_pla_04_standard_process_data()
+
+
+def copy_dual_pla_04_standard_process_data() -> dict:
+    return copy.deepcopy(PROCESS_DATA_DUAL_PLA_04_STANDARD)
+
+
+def dual_pla_04_offset_calibration_process_data() -> dict:
+    return dual_pla_04_standard_process_data()
 
 
 def cold_bed_dual_pla_04_offset_calibration_process_data() -> dict:
     return dual_pla_04_offset_calibration_process_data()
 
 
-PROCESS_DATA_DUAL_PLA_04_OFFSET_CALIBRATION = (
-    dual_pla_04_offset_calibration_process_data()
-)
+PROCESS_DATA_DUAL_PLA_04_OFFSET_CALIBRATION = PROCESS_DATA_DUAL_PLA_04_STANDARD
 
 
 def copy_dual_pla_04_offset_calibration_process_data() -> dict:
@@ -327,37 +290,24 @@ def copy_cold_bed_dual_pla_04_offset_calibration_process_data() -> dict:
     return copy_dual_pla_04_offset_calibration_process_data()
 
 
-def dual_pla_06_offset_calibration_process_data() -> dict:
-    process_data = cold_bed_pla_06_first_print_process_data()
-    process_data["filament"] = T0_FILAMENT_PROFILE
-    process_data["filaments"] = [T0_FILAMENT_PROFILE, T1_FILAMENT_PROFILE]
-    process_data["print_area"] = copy.deepcopy(DUAL_TOOLSWITCH_PRINT_AREA)
-    _set_all_plate_bed_temperatures(process_data, PLA_EXAMPLE_BED_TEMP_C)
-    _tune_offset_calibration_for_speed(process_data)
-    process_data["process_overrides"].update(
-        {
-            "brim_type": "no_brim",
-            "brim_width": "0",
-            "sparse_infill_density": "100%",
-            "wall_loops": "1",
-            "top_shell_layers": "2",
-            "bottom_shell_layers": "2",
-            "enable_prime_tower": "1",
-            "prime_tower_width": "35",
-            "prime_tower_brim_width": "3",
-            "purge_in_prime_tower": "1",
-            "wipe_tower_x": "200",
-            "wipe_tower_y": "220",
-            "wipe_tower_no_sparse_layers": "0",
-            "standby_temperature_delta": "0",
-        }
+def dual_pla_06_standard_process_data() -> dict:
+    return _standardize_dual_pla_process_data(
+        cold_bed_pla_06_first_print_process_data()
     )
-    return process_data
 
 
-PROCESS_DATA_DUAL_PLA_06_OFFSET_CALIBRATION = (
-    dual_pla_06_offset_calibration_process_data()
-)
+PROCESS_DATA_DUAL_PLA_06_STANDARD = dual_pla_06_standard_process_data()
+
+
+def copy_dual_pla_06_standard_process_data() -> dict:
+    return copy.deepcopy(PROCESS_DATA_DUAL_PLA_06_STANDARD)
+
+
+def dual_pla_06_offset_calibration_process_data() -> dict:
+    return dual_pla_06_standard_process_data()
+
+
+PROCESS_DATA_DUAL_PLA_06_OFFSET_CALIBRATION = PROCESS_DATA_DUAL_PLA_06_STANDARD
 
 
 def copy_dual_pla_06_offset_calibration_process_data() -> dict:

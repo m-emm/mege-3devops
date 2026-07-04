@@ -37,14 +37,14 @@ printable_height: "294"
 
 # === Machine limits ===
 machine_max_acceleration_extruding:
-  - "8000"
-  - "8000"
+  - "3500"
+  - "3500"
 machine_max_acceleration_retracting:
-  - "5000"
-  - "5000"
+  - "3500"
+  - "3500"
 machine_max_acceleration_travel:
-  - "8000"
-  - "8000"
+  - "3500"
+  - "3500"
 machine_min_extruding_rate:
   - "0"
   - "0"
@@ -164,11 +164,11 @@ machine_max_acceleration_e:
   - "5000"
   - "5000"
 machine_max_acceleration_x:
-  - "8000"
-  - "8000"
+  - "3500"
+  - "3500"
 machine_max_acceleration_y:
-  - "8000"
-  - "8000"
+  - "3500"
+  - "3500"
 machine_max_acceleration_z:
   - "300"
   - "300"
@@ -176,11 +176,11 @@ machine_max_jerk_e:
   - "5"
   - "5"
 machine_max_jerk_x:
-  - "10"
-  - "10"
+  - "5"
+  - "5"
 machine_max_jerk_y:
-  - "10"
-  - "10"
+  - "5"
+  - "5"
 machine_max_jerk_z:
   - "0.4"
   - "0.4"
@@ -188,11 +188,11 @@ machine_max_speed_e:
   - "40"
   - "40"
 machine_max_speed_x:
-  - "500"
-  - "500"
+  - "300"
+  - "300"
 machine_max_speed_y:
-  - "500"
-  - "500"
+  - "300"
+  - "300"
 machine_max_speed_z:
   - "30"
   - "30"
