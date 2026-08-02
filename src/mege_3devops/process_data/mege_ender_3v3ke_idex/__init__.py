@@ -50,9 +50,12 @@ DUAL_TOOLSWITCH_PRINT_AREA = {
 
 T0_FILAMENT_PROFILE = "FilamentCrealityPLAHighSpeedTunedForSpeed"
 T1_FILAMENT_PROFILE = "FilamentCrealityPLAHighSpeedTunedForSpeedT1"
+PETGCF_FILAMENT_PROFILE = "FilamentPETGCF"
+TPU95A_FILAMENT_PROFILE = "FilamenteSunTPU95A"
 PLA_EXAMPLE_BED_TEMP_C = 60
-SAFE_XY_SPEED_MM_S = 300
-SAFE_XY_ACCEL_MM_S2 = 3500
+PETGCF_TPU95A_DEMO_BED_TEMP_C = 55
+SAFE_XY_SPEED_MM_S = 400
+SAFE_XY_ACCEL_MM_S2 = 6000
 SAFE_XY_JERK_MM_S = 5
 DUAL_MATERIAL_Z_HOP_MM = "0.6"
 DUAL_MATERIAL_Z_HOP_TYPE = "Normal Lift"
@@ -73,10 +76,32 @@ BED_TEMP_OVERRIDE_KEYS = (
     "textured_plate_temp_initial_layer",
 )
 
+MIXED_MATERIAL_FILAMENT_OVERRIDE_KEYS = (
+    "adaptive_pressure_advance",
+    "adaptive_pressure_advance_bridges",
+    "adaptive_pressure_advance_overhangs",
+    "enable_pressure_advance",
+    "fan_cooling_layer_time",
+    "fan_max_speed",
+    "fan_min_speed",
+    "filament_deretraction_speed",
+    "filament_flow_ratio",
+    "filament_max_volumetric_speed",
+    "filament_retraction_length",
+    "filament_retraction_speed",
+    "nozzle_temperature",
+    "nozzle_temperature_initial_layer",
+    "overhang_fan_speed",
+    "pressure_advance",
+    "slow_down_for_layer_cooling",
+    "slow_down_layer_time",
+)
+
 
 def resolve_idex_process_data_from_parameters(**kwargs) -> dict:
     kwargs.setdefault("printer_id", PRINTER_ID)
     process_data = resolve_process_data_from_parameters(**kwargs)
+    process_data["print_area"] = copy.deepcopy(T0_SINGLE_PRINT_AREA)
     process_data["master_settings_dir"] = MASTER_SETTINGS_DIR.resolve().as_posix()
     return process_data
 
@@ -126,6 +151,96 @@ def _standardize_dual_pla_process_data(process_data: dict) -> dict:
         }
     )
     return process_data
+
+
+def _remove_mixed_material_filament_overrides(process_data: dict) -> None:
+    for key in MIXED_MATERIAL_FILAMENT_OVERRIDE_KEYS:
+        process_data["process_overrides"].pop(key, None)
+
+
+def dual_petgcf_tpu95a_06_demo_process_data() -> dict:
+    process_data = resolve_idex_process_data_from_parameters(
+        material_name="petg_cf_generic",
+        nozzle_diameter_mm=0.6,
+        nozzle_hardened=True,
+        nozzle_high_flow=True,
+        strength_factor=0.3,
+        quality_factor=0.7,
+    )
+    process_data["filament"] = PETGCF_FILAMENT_PROFILE
+    process_data["filaments"] = [PETGCF_FILAMENT_PROFILE, TPU95A_FILAMENT_PROFILE]
+    process_data["print_area"] = copy.deepcopy(DUAL_TOOLSWITCH_PRINT_AREA)
+    _remove_mixed_material_filament_overrides(process_data)
+    for machine_list_key in ("nozzle_diameter", "min_layer_height", "max_layer_height"):
+        process_data["process_overrides"].pop(machine_list_key, None)
+    _set_all_plate_bed_temperatures(process_data, PETGCF_TPU95A_DEMO_BED_TEMP_C)
+    _enable_dual_material_z_hop(process_data)
+    process_data["process_overrides"].update(
+        {
+            "layer_height": "0.30",
+            "initial_layer_print_height": "0.30",
+            "line_width": "0.65",
+            "initial_layer_line_width": "0.70",
+            "outer_wall_line_width": "0.60",
+            "inner_wall_line_width": "0.65",
+            "top_surface_line_width": "0.60",
+            "sparse_infill_line_width": "0.70",
+            "internal_solid_infill_line_width": "0.65",
+            "support_line_width": "0.65",
+            "outer_wall_speed": "45",
+            "external_perimeter_speed": "45",
+            "top_surface_speed": "45",
+            "inner_wall_speed": "60",
+            "sparse_infill_speed": "60",
+            "internal_solid_infill_speed": "60",
+            "solid_infill_speed": "60",
+            "gap_fill_speed": "35",
+            "gap_infill_speed": "35",
+            "travel_speed": str(SAFE_XY_SPEED_MM_S),
+            "bridge_speed": "25",
+            "initial_layer_speed": "25",
+            "initial_layer_infill_speed": "35",
+            "default_acceleration": str(SAFE_XY_ACCEL_MM_S2),
+            "initial_layer_acceleration": "1500",
+            "outer_wall_acceleration": "2000",
+            "inner_wall_acceleration": "2500",
+            "top_surface_acceleration": "2000",
+            "travel_acceleration": str(SAFE_XY_ACCEL_MM_S2),
+            "sparse_infill_acceleration": "2500",
+            "internal_solid_infill_acceleration": "2500",
+            "bridge_acceleration": "1200",
+            "default_jerk": str(SAFE_XY_JERK_MM_S),
+            "initial_layer_jerk": str(SAFE_XY_JERK_MM_S),
+            "outer_wall_jerk": str(SAFE_XY_JERK_MM_S),
+            "inner_wall_jerk": str(SAFE_XY_JERK_MM_S),
+            "top_surface_jerk": str(SAFE_XY_JERK_MM_S),
+            "travel_jerk": str(SAFE_XY_JERK_MM_S),
+            "infill_jerk": str(SAFE_XY_JERK_MM_S),
+            "brim_type": "no_brim",
+            "brim_width": "0",
+            "brim_object_gap": "0",
+            "wall_loops": "1",
+            "top_shell_layers": "1",
+            "bottom_shell_layers": "1",
+            "enable_support": "0",
+            "enable_prime_tower": "1",
+            "prime_tower_width": "35",
+            "prime_tower_brim_width": "3",
+            "purge_in_prime_tower": "1",
+            "wipe_tower_x": "200",
+            "wipe_tower_y": "15",
+            "wipe_tower_no_sparse_layers": "0",
+            "standby_temperature_delta": "0",
+        }
+    )
+    return process_data
+
+
+PROCESS_DATA_DUAL_PETGCF_TPU95A_06_DEMO = dual_petgcf_tpu95a_06_demo_process_data()
+
+
+def copy_dual_petgcf_tpu95a_06_demo_process_data() -> dict:
+    return copy.deepcopy(PROCESS_DATA_DUAL_PETGCF_TPU95A_06_DEMO)
 
 
 def cold_bed_pla_04_first_print_process_data() -> dict:

@@ -179,12 +179,12 @@ small_perimeter_threshold: '0'
 # === Speed / Acceleration ===
 accel_to_decel_enable: '0'
 accel_to_decel_factor: 100%
-default_acceleration: '3500'
+default_acceleration: '6000'
 initial_layer_acceleration: '3000'
-inner_wall_acceleration: '3500'
+inner_wall_acceleration: '6000'
 outer_wall_acceleration: '3000'
 top_surface_acceleration: '3000'
-travel_acceleration: '3500'
+travel_acceleration: '6000'
 # sparse_infill_acceleration: percentage of default_acceleration or absolute value
 sparse_infill_acceleration: 100%
 # internal_solid_infill_acceleration: percentage of default_acceleration or absolute value
@@ -208,7 +208,7 @@ top_surface_jerk: '5'
 travel_jerk: '5'
 
 # === Speed / Travel speed ===
-travel_speed: '300'
+travel_speed: '500'
 # travel_speed_z: Z-axis travel speed in mm/s (0 = use firmware default)
 travel_speed_z: '0'
 

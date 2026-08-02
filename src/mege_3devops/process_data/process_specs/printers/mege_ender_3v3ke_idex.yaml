@@ -1,6 +1,6 @@
 printer_id: mege_ender_3v3ke_idex
-max_speed_xy_mm_s: 300.0
-max_accel_xy_mm_s2: 3500.0
+max_speed_xy_mm_s: 500.0
+max_accel_xy_mm_s2: 6000.0
 max_jerk_xy_mm_s: 5.0
 hotend_base_flow_mm3_s: 15.0
 min_layer_height_ratio: 0.25
