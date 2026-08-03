@@ -57,11 +57,11 @@ machine_load_filament_time: "11"
 
 # === Multimaterial / Layer height limits ===
 max_layer_height:
-  - "0.32"
-  - "0.32"
+  - "0.45"
+  - "0.45"
 min_layer_height:
-  - "0.08"
-  - "0.08"
+  - "0.15"
+  - "0.15"
 
 # === Multimaterial / Position ===
 extruder_offset:
@@ -270,7 +270,7 @@ machine_start_gcode: |-
   G1 E0.0000 F1200
 print_host: menderpi.local:7125
 printer_technology: FFF
-printer_variant: "0.4"
+printer_variant: "0.6"
 silent_mode: "0"
 thumbnails:
   - 96x96

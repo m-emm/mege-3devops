@@ -27,11 +27,16 @@ from mege_3devops.process_data.mege_ender_3v3ke_idex import (
     T0_SINGLE_BED_ORIGIN,
     T0_SINGLE_BED_WIDTH_MM,
     T0_SINGLE_PRINT_AREA,
+    T1_SINGLE_BED_DEPTH_MM,
+    T1_SINGLE_BED_ORIGIN,
+    T1_SINGLE_BED_WIDTH_MM,
+    T1_SINGLE_PRINT_AREA,
     copy_dual_pla_04_offset_calibration_process_data,
     copy_dual_pla_04_standard_process_data,
     copy_dual_pla_06_offset_calibration_process_data,
     copy_dual_pla_06_standard_process_data,
     resolve_idex_process_data_from_parameters,
+    t1_tpu95a_06_high_speed_process_data,
 )
 from mege_3devops.process_data.parametric import (
     IntentSpec,
@@ -273,6 +278,7 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         self.assertEqual(MASTER_SETTINGS_DIR.name, "settings_master")
         self.assertTrue(MASTER_SETTINGS_DIR.exists())
         _assert_ordered_print_area(self, T0_SINGLE_PRINT_AREA)
+        _assert_ordered_print_area(self, T1_SINGLE_PRINT_AREA)
         _assert_ordered_print_area(self, DUAL_TOOLSWITCH_PRINT_AREA)
         self.assertEqual(
             T0_SINGLE_BED_WIDTH_MM,
@@ -285,6 +291,15 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         self.assertEqual(
             T0_SINGLE_BED_ORIGIN,
             (T0_SINGLE_PRINT_AREA["x_min_mm"], T0_SINGLE_PRINT_AREA["y_min_mm"]),
+        )
+        self.assertEqual(
+            T1_SINGLE_BED_WIDTH_MM,
+            T1_SINGLE_PRINT_AREA["x_max_mm"] - T1_SINGLE_PRINT_AREA["x_min_mm"],
+        )
+        self.assertEqual(T1_SINGLE_BED_DEPTH_MM, SAFE_BED_DEPTH_MM)
+        self.assertEqual(
+            T1_SINGLE_BED_ORIGIN,
+            (T1_SINGLE_PRINT_AREA["x_min_mm"], T1_SINGLE_PRINT_AREA["y_min_mm"]),
         )
 
         for key in BED_TEMP_KEYS:
@@ -449,6 +464,24 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             print_host = Path(artifacts["print_host_path"]).read_text(encoding="utf-8")
 
         self.assertEqual(machine_settings["name"], machine_settings["printer_model"])
+        nozzle_diameters = machine_settings["nozzle_diameter"]
+        if not isinstance(nozzle_diameters, list):
+            nozzle_diameters = [nozzle_diameters]
+        self.assertTrue(
+            all(
+                diameter == machine_settings["printer_variant"]
+                for diameter in nozzle_diameters
+            )
+        )
+        self.assertEqual(len(machine_settings["min_layer_height"]), 2)
+        self.assertEqual(len(machine_settings["max_layer_height"]), 2)
+        for nozzle, minimum, maximum in zip(
+            nozzle_diameters,
+            machine_settings["min_layer_height"],
+            machine_settings["max_layer_height"],
+        ):
+            self.assertAlmostEqual(float(minimum), float(nozzle) * 0.25)
+            self.assertAlmostEqual(float(maximum), float(nozzle) * 0.75)
         self.assertEqual(print_host, machine_settings["print_host"])
         self.assertEqual(len(machine_settings["printable_area"]), 4)
         self.assertGreater(_parse_flat_value(machine_settings["printable_height"]), 0.0)
@@ -461,6 +494,55 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
             filament_settings["compatible_printers"],
         )
         self.assertTrue(filament_settings["filament_settings_id"])
+
+    def test_mege_ender_idex_t1_process_uses_second_identical_filament_slot(self):
+        process_data = resolve_idex_process_data_from_parameters(
+            toolhead="T1",
+            material_name="esun_tpu_95a",
+            nozzle_diameter_mm=0.6,
+            nozzle_hardened=True,
+            nozzle_high_flow=True,
+            strength_factor=0.4,
+            quality_factor=0.0,
+        )
+
+        self.assertEqual(process_data["print_area"], T1_SINGLE_PRINT_AREA)
+        self.assertEqual(
+            process_data["filaments"],
+            [process_data["filament"], process_data["filament"]],
+        )
+
+    def test_mege_ender_idex_rejects_unknown_single_toolhead(self):
+        with self.assertRaisesRegex(ValueError, "T0.*T1"):
+            resolve_idex_process_data_from_parameters(
+                toolhead="T2",
+                material_name="esun_tpu_95a",
+                nozzle_diameter_mm=0.6,
+                nozzle_hardened=True,
+                nozzle_high_flow=True,
+                strength_factor=0.4,
+                quality_factor=0.0,
+            )
+
+    def test_mege_ender_idex_t1_tpu_process_reuses_workshop_high_speed_profile(self):
+        process_data = t1_tpu95a_06_high_speed_process_data()
+        overrides = process_data["process_overrides"]
+
+        self.assertEqual(process_data["print_area"], T1_SINGLE_PRINT_AREA)
+        self.assertEqual(
+            process_data["filaments"],
+            [process_data["filament"], process_data["filament"]],
+        )
+        self.assertGreater(
+            _parse_flat_value(overrides["filament_max_volumetric_speed"]), 0.0
+        )
+        self.assertGreater(_parse_flat_value(overrides["outer_wall_speed"]), 0.0)
+        self.assertGreaterEqual(
+            _parse_flat_value(overrides["inner_wall_speed"]),
+            _parse_flat_value(overrides["outer_wall_speed"]),
+        )
+        self.assertEqual(overrides["enable_pressure_advance"], "1")
+        self.assertGreater(_parse_flat_value(overrides["pressure_advance"]), 0.0)
 
     def test_mege_ender_idex_dual_pla_standard_processes_are_safe_and_dual_material(
         self,
@@ -475,7 +557,9 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
                 overrides = process_data["process_overrides"]
                 self.assertEqual(len(process_data["filaments"]), 2)
                 self.assertEqual(process_data["filaments"][0], process_data["filament"])
-                self.assertNotEqual(process_data["filaments"][1], process_data["filament"])
+                self.assertNotEqual(
+                    process_data["filaments"][1], process_data["filament"]
+                )
                 self.assertEqual(process_data["print_area"], DUAL_TOOLSWITCH_PRINT_AREA)
                 for key in (
                     "enable_prime_tower",

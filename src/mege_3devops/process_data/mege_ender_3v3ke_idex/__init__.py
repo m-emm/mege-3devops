@@ -5,6 +5,9 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
+from mege_3devops.process_data.mender3.process_data_06_high_speed import (
+    PROCESS_DATA_TPU_06_HS,
+)
 from mege_3devops.process_data.parametric import resolve_process_data_from_parameters
 
 PRINTER_ID = "mege_ender_3v3ke_idex"
@@ -12,6 +15,8 @@ MASTER_SETTINGS_DIR = Path(__file__).with_name("settings_master")
 
 T0_SINGLE_X_MIN_MM = -30.0
 T0_SINGLE_X_MAX_MM = 244.0
+T1_SINGLE_X_MIN_MM = 0.0
+T1_SINGLE_X_MAX_MM = 274.0
 DUAL_TOOLSWITCH_X_MIN_MM = 0.0
 DUAL_TOOLSWITCH_X_MAX_MM = 244.0
 PRINTABLE_Y_MIN_MM = 0.0
@@ -30,11 +35,22 @@ SAFE_BED_ORIGIN = (SAFE_X_MIN_MM, SAFE_Y_MIN_MM)
 T0_SINGLE_BED_WIDTH_MM = T0_SINGLE_X_MAX_MM - T0_SINGLE_X_MIN_MM
 T0_SINGLE_BED_DEPTH_MM = SAFE_BED_DEPTH_MM
 T0_SINGLE_BED_ORIGIN = (T0_SINGLE_X_MIN_MM, SAFE_Y_MIN_MM)
+T1_SINGLE_BED_WIDTH_MM = T1_SINGLE_X_MAX_MM - T1_SINGLE_X_MIN_MM
+T1_SINGLE_BED_DEPTH_MM = SAFE_BED_DEPTH_MM
+T1_SINGLE_BED_ORIGIN = (T1_SINGLE_X_MIN_MM, SAFE_Y_MIN_MM)
 
 T0_SINGLE_PRINT_AREA = {
     "mode": "single_t0",
     "x_min_mm": T0_SINGLE_X_MIN_MM,
     "x_max_mm": T0_SINGLE_X_MAX_MM,
+    "y_min_mm": SAFE_Y_MIN_MM,
+    "y_max_mm": SAFE_Y_MAX_MM,
+    "z_max_mm": SAFE_Z_MAX_MM,
+}
+T1_SINGLE_PRINT_AREA = {
+    "mode": "single_t1",
+    "x_min_mm": T1_SINGLE_X_MIN_MM,
+    "x_max_mm": T1_SINGLE_X_MAX_MM,
     "y_min_mm": SAFE_Y_MIN_MM,
     "y_max_mm": SAFE_Y_MAX_MM,
     "z_max_mm": SAFE_Z_MAX_MM,
@@ -98,11 +114,44 @@ MIXED_MATERIAL_FILAMENT_OVERRIDE_KEYS = (
 )
 
 
-def resolve_idex_process_data_from_parameters(**kwargs) -> dict:
+def resolve_idex_process_data_from_parameters(
+    *, toolhead: str = "T0", **kwargs
+) -> dict:
+    normalized_toolhead = str(toolhead).strip().upper()
+    if normalized_toolhead not in {"T0", "T1"}:
+        raise ValueError("toolhead must be 'T0' or 'T1'")
+
     kwargs.setdefault("printer_id", PRINTER_ID)
     process_data = resolve_process_data_from_parameters(**kwargs)
-    process_data["print_area"] = copy.deepcopy(T0_SINGLE_PRINT_AREA)
+    for machine_list_key in ("nozzle_diameter", "min_layer_height", "max_layer_height"):
+        process_data["process_overrides"].pop(machine_list_key, None)
+    if normalized_toolhead == "T1":
+        filament = process_data["filament"]
+        process_data["filaments"] = [filament, filament]
+        process_data["print_area"] = copy.deepcopy(T1_SINGLE_PRINT_AREA)
+    else:
+        process_data["print_area"] = copy.deepcopy(T0_SINGLE_PRINT_AREA)
     process_data["master_settings_dir"] = MASTER_SETTINGS_DIR.resolve().as_posix()
+    return process_data
+
+
+def t1_tpu95a_06_high_speed_process_data() -> dict:
+    """Return the workshop 0.6 mm high-speed TPU95 process for IDEX T1."""
+
+    process_data = copy.deepcopy(PROCESS_DATA_TPU_06_HS)
+    process_data["filament"] = TPU95A_FILAMENT_PROFILE
+    process_data["filaments"] = [TPU95A_FILAMENT_PROFILE, TPU95A_FILAMENT_PROFILE]
+    process_data["print_area"] = copy.deepcopy(T1_SINGLE_PRINT_AREA)
+    process_data["master_settings_dir"] = MASTER_SETTINGS_DIR.resolve().as_posix()
+    for machine_list_key in ("nozzle_diameter", "min_layer_height", "max_layer_height"):
+        process_data["process_overrides"].pop(machine_list_key, None)
+    process_data["process_overrides"].update(
+        {
+            "layer_height": "0.36",
+            "enable_pressure_advance": "1",
+            "pressure_advance": "0.12",
+        }
+    )
     return process_data
 
 

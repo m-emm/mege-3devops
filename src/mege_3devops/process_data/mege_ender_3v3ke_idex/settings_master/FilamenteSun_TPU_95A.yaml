@@ -48,9 +48,9 @@ temperature_vitrification:
 filament_flow_ratio:
   - "1.00"
 enable_pressure_advance:
-  - "0"
+  - "1"
 pressure_advance:
-  - "0.01"
+  - "0.12"
 adaptive_pressure_advance:
   - "0"
 adaptive_pressure_advance_bridges:
