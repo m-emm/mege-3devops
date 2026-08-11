@@ -158,8 +158,6 @@ machine_end_gcode: |-
   M104 S0 ;Turn-off right hotend
   T0 ;Leave both carriages parked, left tool active
   M140 S0 ;Turn-off bed
-  BED_MESH_CLEAR ;Do not leave the completed print's mesh active
-
   M84 X Y E ;Disable all steppers but Z
 machine_max_acceleration_e:
   - "5000"
@@ -216,9 +214,7 @@ machine_start_gcode: |-
 
   G1 Z2.0 F480 ;Move Z Axis inside current live limit
   M190 S[bed_temperature_initial_layer_single] ;Wait for bed temp to stabilize
-  BED_MESH_CLEAR ;Discard any mesh left active by an interrupted print
-  T0 ;Select the Eddy-equipped left toolhead for probing
-  BED_MESH_CALIBRATE PROFILE=default METHOD=scan ;Probe and activate a fresh print mesh
+  BED_MESH_PROFILE LOAD=default ;Use the source-controlled stable bed mesh
   {if initial_tool==0}T0
   G92 E0 ;Reset left extruder
   G1 X10 Y-7.5 F3600 ;Move to left front purge start in physical bed margin

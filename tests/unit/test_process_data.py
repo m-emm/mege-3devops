@@ -398,6 +398,12 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         self.assertNotIn("M600", machine_gcode)
         self.assertIn("{if initial_tool==0}T0", machine_start_gcode)
         self.assertIn("{if initial_tool==1}T1", machine_start_gcode)
+        self.assertIn(
+            "BED_MESH_PROFILE LOAD=default ;Use the source-controlled stable bed mesh",
+            machine_start_gcode,
+        )
+        self.assertNotIn("BED_MESH_CALIBRATE", machine_start_gcode)
+        self.assertNotIn("BED_MESH_CLEAR", machine_start_gcode)
         self.assertIn("T0", machine_gcode)
         self.assertIn("T1", machine_gcode)
         self.assertGreaterEqual(machine_start_gcode.count(" E"), 2)

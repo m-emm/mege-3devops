@@ -66,7 +66,9 @@ internal_bridge_density: 100%
 thick_bridges: '0'
 # thick_internal_bridges: 0=thin internal bridges, 1=thick
 thick_internal_bridges: '1'
-# max_bridge_length: maximum bridge span in mm for bridge detection
+# max_bridge_length: bridge span Orca may leave unsupported; 0 requests support
+# for every span length. This is not sufficient with tree(auto); see the
+# bridge_no_support warning in the Support section below.
 max_bridge_length: '10'
 detect_overhang_wall: '1'
 enable_overhang_speed: '1'
@@ -237,6 +239,11 @@ only_one_wall_first_layer: '0'
 precise_outer_wall: '0'
 
 # === Support ===
+# Orca double negative: '0' allows bridge support; '1' suppresses it.
+# This flag alone does not force tree(auto) to support bridges. For a bridge
+# that must be supported, override support_type to normal(auto), use the
+# normal/default support style, and verify the sliced toolpaths. See the
+# mege-ender-3v3ke-idex AGENTS.md section "Orca bridge-support trap".
 bridge_no_support: '0'
 # brim_ears_detection_length: minimum protrusion length that gets a brim ear
 brim_ears_detection_length: '1'

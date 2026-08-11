@@ -272,13 +272,11 @@ def dual_petgcf_tpu95a_06_demo_process_data() -> dict:
             "top_shell_layers": "1",
             "bottom_shell_layers": "1",
             "enable_support": "0",
-            "enable_prime_tower": "1",
-            "prime_tower_width": "35",
-            "prime_tower_brim_width": "3",
-            "purge_in_prime_tower": "1",
-            "wipe_tower_x": "200",
-            "wipe_tower_y": "15",
-            "wipe_tower_no_sparse_layers": "0",
+            "enable_prime_tower": "0",
+            "change_filament_gcode": (
+                "T{next_extruder}\n"
+                "IDEX_PRIME_AND_BRUSH TOOL={next_extruder}"
+            ),
             "standby_temperature_delta": "0",
         }
     )
