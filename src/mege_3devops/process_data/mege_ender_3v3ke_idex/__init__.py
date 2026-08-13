@@ -67,6 +67,7 @@ DUAL_TOOLSWITCH_PRINT_AREA = {
 T0_FILAMENT_PROFILE = "FilamentCrealityPLAHighSpeedTunedForSpeed"
 T1_FILAMENT_PROFILE = "FilamentCrealityPLAHighSpeedTunedForSpeedT1"
 PETGCF_FILAMENT_PROFILE = "FilamentPETGCF"
+PETGCF_MAX_STRENGTH_FILAMENT_PROFILE = "FilamentPETGCFMaxStrength"
 TPU95A_FILAMENT_PROFILE = "FilamenteSunTPU95A"
 PLA_EXAMPLE_BED_TEMP_C = 60
 PETGCF_TPU95A_DEMO_BED_TEMP_C = 55
@@ -274,8 +275,7 @@ def dual_petgcf_tpu95a_06_demo_process_data() -> dict:
             "enable_support": "0",
             "enable_prime_tower": "0",
             "change_filament_gcode": (
-                "T{next_extruder}\n"
-                "IDEX_PRIME_AND_BRUSH TOOL={next_extruder}"
+                "T{next_extruder}\n" "IDEX_PRIME_AND_BRUSH TOOL={next_extruder}"
             ),
             "standby_temperature_delta": "0",
         }
@@ -288,6 +288,52 @@ PROCESS_DATA_DUAL_PETGCF_TPU95A_06_DEMO = dual_petgcf_tpu95a_06_demo_process_dat
 
 def copy_dual_petgcf_tpu95a_06_demo_process_data() -> dict:
     return copy.deepcopy(PROCESS_DATA_DUAL_PETGCF_TPU95A_06_DEMO)
+
+
+def dual_petgcf_tpu95a_06_max_strength_process_data() -> dict:
+    """Return the proven max-strength PETG-CF / TPU dual-material process.
+
+    PETG-CF uses its dedicated high-flow filament master so the TPU slot keeps
+    its own volumetric and cooling limits. Overhang detection remains enabled:
+    Orca can classify the PETG expansion above the TPU object as an overhang,
+    even though the TPU physically supports that interface.
+    """
+
+    process_data = copy_dual_petgcf_tpu95a_06_demo_process_data()
+    process_data["filament"] = PETGCF_MAX_STRENGTH_FILAMENT_PROFILE
+    process_data["filaments"] = [
+        PETGCF_MAX_STRENGTH_FILAMENT_PROFILE,
+        TPU95A_FILAMENT_PROFILE,
+    ]
+    process_data["process_overrides"].update(
+        {
+            "layer_height": "0.32",
+            "initial_layer_print_height": "0.32",
+            "outer_wall_speed": "82",
+            "external_perimeter_speed": "82",
+            "top_surface_speed": "82",
+            "inner_wall_speed": "144",
+            "sparse_infill_speed": "144",
+            "internal_solid_infill_speed": "144",
+            "solid_infill_speed": "144",
+            "detect_overhang_wall": "1",
+            "enable_overhang_speed": "1",
+            "overhang_1_4_speed": "0",
+            "overhang_2_4_speed": "0",
+            "overhang_3_4_speed": "50",
+            "overhang_4_4_speed": "35",
+        }
+    )
+    return process_data
+
+
+PROCESS_DATA_DUAL_PETGCF_TPU95A_06_MAX_STRENGTH = (
+    dual_petgcf_tpu95a_06_max_strength_process_data()
+)
+
+
+def copy_dual_petgcf_tpu95a_06_max_strength_process_data() -> dict:
+    return copy.deepcopy(PROCESS_DATA_DUAL_PETGCF_TPU95A_06_MAX_STRENGTH)
 
 
 def cold_bed_pla_04_first_print_process_data() -> dict:

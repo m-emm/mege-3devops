@@ -35,6 +35,7 @@ from mege_3devops.process_data.mege_ender_3v3ke_idex import (
     copy_dual_pla_04_standard_process_data,
     copy_dual_pla_06_offset_calibration_process_data,
     copy_dual_pla_06_standard_process_data,
+    copy_dual_petgcf_tpu95a_06_max_strength_process_data,
     resolve_idex_process_data_from_parameters,
     t1_tpu95a_06_high_speed_process_data,
 )
@@ -501,6 +502,28 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         )
         self.assertTrue(filament_settings["filament_settings_id"])
 
+    def test_mege_ender_idex_dual_petgcf_max_strength_keeps_tpu_limits_separate(self):
+        process_data = copy_dual_petgcf_tpu95a_06_max_strength_process_data()
+        overrides = process_data["process_overrides"]
+
+        self.assertEqual(
+            process_data["filaments"],
+            ["FilamentPETGCFMaxStrength", "FilamenteSunTPU95A"],
+        )
+        self.assertGreater(float(overrides["layer_height"]), 0.0)
+        self.assertGreater(float(overrides["outer_wall_speed"]), 0.0)
+        self.assertGreaterEqual(
+            float(overrides["inner_wall_speed"]),
+            float(overrides["outer_wall_speed"]),
+        )
+        self.assertGreaterEqual(
+            float(overrides["sparse_infill_speed"]),
+            float(overrides["inner_wall_speed"]),
+        )
+        self.assertEqual(overrides["detect_overhang_wall"], "1")
+        self.assertEqual(overrides["enable_overhang_speed"], "1")
+        self.assertGreater(float(overrides["overhang_4_4_speed"]), 10.0)
+
     def test_mege_ender_idex_t1_process_uses_second_identical_filament_slot(self):
         process_data = resolve_idex_process_data_from_parameters(
             toolhead="T1",
@@ -678,8 +701,16 @@ class ParametricProcessDataRegressionTest(unittest.TestCase):
         for key in (
             "enable_prime_tower",
             "prime_tower_width",
+            "prime_volume",
             "prime_tower_brim_width",
             "purge_in_prime_tower",
+            "wipe_tower_rotation_angle",
+            "wipe_tower_bridging",
+            "wipe_tower_cone_angle",
+            "wipe_tower_extra_spacing",
+            "wipe_tower_extra_flow",
+            "wipe_tower_max_purge_speed",
+            "single_extruder_multi_material_priming",
             "wipe_tower_x",
             "wipe_tower_y",
             "wipe_tower_no_sparse_layers",

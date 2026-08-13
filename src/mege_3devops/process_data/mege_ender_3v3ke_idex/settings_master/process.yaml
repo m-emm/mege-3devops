@@ -18,8 +18,16 @@ standby_temperature_delta: '0'
 # === Multimaterial / Prime tower ===
 enable_prime_tower: '0'
 prime_tower_width: '35'
+prime_volume: '45'
 prime_tower_brim_width: '3'
 purge_in_prime_tower: '1'
+wipe_tower_rotation_angle: '0'
+wipe_tower_bridging: '10'
+wipe_tower_cone_angle: '0'
+wipe_tower_extra_spacing: 100%
+wipe_tower_extra_flow: 100%
+wipe_tower_max_purge_speed: '90'
+single_extruder_multi_material_priming: '0'
 wipe_tower_x: '200'
 wipe_tower_y: '15'
 wipe_tower_no_sparse_layers: '0'
