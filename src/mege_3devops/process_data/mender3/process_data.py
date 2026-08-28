@@ -1,3 +1,5 @@
+import copy
+
 from mege_3devops.process_data.mender3.process_data_utils import (
     augment,
     augment_with_bed_temperatures,
@@ -91,6 +93,83 @@ PROCESS_DATA_PLA_06 = augment(
     quality_jerk=pla_06_quality_jerk,
     inner_jerk=pla_06_inner_jerk,
 )
+
+
+def epa_cf_nylon_process_data(
+    *,
+    nozzle_diameter: float = 0.6,
+    nozzle_temperature: int = 250,
+    initial_nozzle_temperature: int | None = None,
+    bed_temperature: int = 80,
+    initial_bed_temperature: int | None = None,
+    fan_speed: int = 40,
+    fan_cooling_layer_time: int = 20,
+    print_speed: int = 45,
+    brim_width: float = 8.0,
+    layer_height: float = 0.30,
+) -> dict:
+    """Generate eSun ePA-CF nylon settings for the stock Creality printer.
+
+    Defaults follow the supplied eSun range: 250 C nozzle, 80 C bed, 40%
+    cooling, and 30-60 mm/s printing.  The parameters are intentionally
+    exposed for later calibration without creating another fixed profile.
+    """
+
+    if initial_nozzle_temperature is None:
+        initial_nozzle_temperature = nozzle_temperature
+    if initial_bed_temperature is None:
+        initial_bed_temperature = bed_temperature
+
+    process_data = copy.deepcopy(PROCESS_DATA_06_BASE)
+    overrides = process_data["process_overrides"]
+    process_data["filament"] = "FilamentEsunEPACFNylon"
+    overrides.update(
+        {
+            "nozzle_diameter": f"{nozzle_diameter:g}",
+            "layer_height": f"{layer_height:g}",
+            "initial_layer_print_height": f"{layer_height:g}",
+            "nozzle_temperature": str(nozzle_temperature),
+            "nozzle_temperature_initial_layer": str(initial_nozzle_temperature),
+            "hot_plate_temp": str(bed_temperature),
+            "hot_plate_temp_initial_layer": str(initial_bed_temperature),
+            "cool_plate_temp": str(bed_temperature),
+            "cool_plate_temp_initial_layer": str(initial_bed_temperature),
+            "eng_plate_temp": str(bed_temperature),
+            "eng_plate_temp_initial_layer": str(initial_bed_temperature),
+            "textured_plate_temp": str(bed_temperature),
+            "textured_plate_temp_initial_layer": str(initial_bed_temperature),
+            "outer_wall_speed": str(print_speed),
+            "external_perimeter_speed": str(print_speed),
+            "top_surface_speed": str(print_speed),
+            "inner_wall_speed": str(print_speed),
+            "sparse_infill_speed": str(print_speed),
+            "initial_layer_speed": "25",
+            "initial_layer_infill_speed": "30",
+            "fan_min_speed": "0",
+            "fan_max_speed": str(fan_speed),
+            "overhang_fan_speed": str(fan_speed),
+            "fan_cooling_layer_time": str(fan_cooling_layer_time),
+            "slow_down_for_layer_cooling": "0",
+            "slow_down_layer_time": "10",
+            "filament_flow_ratio": "1.0",
+            "filament_max_volumetric_speed": "8",
+            "filament_retraction_length": "1.2",
+            "filament_retraction_speed": "25",
+            "filament_deretraction_speed": "25",
+            "brim_type": "outer_only",
+            "brim_width": f"{brim_width:g}",
+            "brim_object_gap": "0",
+            "wall_loops": "2",
+            "top_shell_layers": "3",
+            "bottom_shell_layers": "3",
+            "sparse_infill_density": "25%",
+            "enable_support": "0",
+            "enable_pressure_advance": "0",
+            "pressure_advance": "0",
+        }
+    )
+    return process_data
+
 
 # Apply consistent bed temperatures across all plate types
 PROCESS_DATA_PLA_06 = augment_with_bed_temperatures(

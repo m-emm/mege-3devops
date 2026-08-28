@@ -133,19 +133,82 @@ def _assert_front_margin_purge_block(
     tool_index,
 ):
     block = _extract_initial_tool_block(machine_start_gcode, tool_index)
-    draw_count = 0
-    for line in block.splitlines():
-        words = _parse_g1_words(line)
-        if "E" in words and ("X" in words or "Y" in words):
-            draw_count += 1
-            testcase.assertIn("Y", words, line)
-            testcase.assertLess(
-                words["Y"],
-                DUAL_TOOLSWITCH_PRINT_AREA["y_min_mm"],
-                line,
-            )
+    current_xy = None
+    purge_started = False
+    purge_segments = []
 
-    testcase.assertGreater(draw_count, 0)
+    for line in block.splitlines():
+        if purge_started and line.strip().startswith("G92 E0"):
+            break
+
+        words = _parse_g1_words(line)
+        if words.get("Z") == 0.28:
+            purge_started = True
+            continue
+        if purge_started:
+            testcase.assertNotIn("Z", words, line)
+
+        if "X" not in words and "Y" not in words:
+            continue
+
+        if current_xy is None:
+            testcase.assertFalse(purge_started, line)
+            current_xy = (words.get("X"), words.get("Y"))
+            continue
+
+        testcase.assertIsNotNone(current_xy, line)
+        next_xy = (
+            words.get("X", current_xy[0]),
+            words.get("Y", current_xy[1]),
+        )
+        if purge_started:
+            testcase.assertIn("E", words, line)
+            purge_segments.append(
+                {
+                    "start": current_xy,
+                    "end": next_xy,
+                    "extrusion": words["E"],
+                }
+            )
+        current_xy = next_xy
+
+    horizontal_segments = [
+        segment
+        for segment in purge_segments
+        if segment["start"][1] == segment["end"][1]
+    ]
+    turn_segments = [
+        segment
+        for segment in purge_segments
+        if segment["start"][1] != segment["end"][1]
+    ]
+    testcase.assertEqual(len(horizontal_segments), 4)
+    testcase.assertEqual(len(turn_segments), 3)
+    testcase.assertEqual(len(purge_segments), 7)
+
+    for previous, current in zip(purge_segments, purge_segments[1:]):
+        testcase.assertEqual(previous["end"], current["start"])
+        testcase.assertGreater(current["extrusion"], previous["extrusion"])
+
+    lane_ys = [segment["end"][1] for segment in horizontal_segments]
+    testcase.assertLess(lane_ys[0], DUAL_TOOLSWITCH_PRINT_AREA["y_min_mm"])
+    testcase.assertGreaterEqual(lane_ys[1], DUAL_TOOLSWITCH_PRINT_AREA["y_min_mm"])
+    lane_steps = [next_y - y for y, next_y in zip(lane_ys, lane_ys[1:])]
+    testcase.assertTrue(all(step > 0 for step in lane_steps))
+    testcase.assertTrue(all(step == lane_steps[0] for step in lane_steps[1:]))
+
+    line_lengths = [
+        abs(segment["end"][0] - segment["start"][0])
+        for segment in horizontal_segments
+    ]
+    shortening_steps = [
+        length - next_length
+        for length, next_length in zip(line_lengths, line_lengths[1:])
+    ]
+    testcase.assertTrue(all(step > 0 for step in shortening_steps))
+    testcase.assertTrue(
+        all(step == shortening_steps[0] for step in shortening_steps[1:])
+    )
 
 
 class ParametricProcessDataRegressionTest(unittest.TestCase):

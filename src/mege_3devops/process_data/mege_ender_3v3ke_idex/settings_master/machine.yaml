@@ -217,22 +217,16 @@ machine_start_gcode: |-
   BED_MESH_PROFILE LOAD=default ;Use the source-controlled stable bed mesh
   {if initial_tool==0}T0
   G92 E0 ;Reset left extruder
-  G1 X10 Y-7.5 F3600 ;Move to left front purge start in physical bed margin
+  G1 X10 Y-2 F3600 ;Move to left front purge start at the printable edge
   M109 S{first_layer_temperature[0]} ;Wait for left hotend
   G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X120 Y-7.5 E8.80 F1200 ;Draw first left front purge line
-  G1 Z0.60 F480 ;Lift before travel to next left purge line
-  G1 X132 Y-5.5 F3600 ;Travel to second left front purge start
-  G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X32 Y-5.5 E16.80 F1200 ;Draw second left front purge line
-  G1 Z0.60 F480 ;Lift before travel to next left purge line
-  G1 X32 Y-3.5 F3600 ;Travel to third left front purge start
-  G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X132 Y-3.5 E24.80 F1200 ;Draw third left front purge line
-  G1 Z0.60 F480 ;Lift before travel to next left purge line
-  G1 X132 Y-1.5 F3600 ;Travel to fourth left front purge start
-  G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X32 Y-1.5 E32.80 F1200 ;Draw fourth left front purge line
+  G1 X120 Y-2 E8.800 F1200 ;Draw first left front purge line
+  G1 X117.5 Y0 E9.056 F1200 ;Extruding turn to second left purge line
+  G1 X12.5 Y0 E17.456 F1200 ;Draw second left front purge line
+  G1 X15 Y2 E17.712 F1200 ;Extruding turn to third left purge line
+  G1 X115 Y2 E25.712 F1200 ;Draw third left front purge line
+  G1 X112.5 Y4 E25.968 F1200 ;Extruding turn to fourth left purge line
+  G1 X17.5 Y4 E33.568 F1200 ;Draw fourth left front purge line
   G92 E0 ;Reset left extruder
   G1 E-0.8 F1200 ;Retract a bit
   G1 Z2.0 F480 ;Lift after left purge
@@ -240,22 +234,16 @@ machine_start_gcode: |-
 
   {if initial_tool==1}T1
   G92 E0 ;Reset right extruder
-  G1 X134 Y-7.5 F3600 ;Move to right front purge start in physical bed margin
+  G1 X134 Y-2 F3600 ;Move to right front purge start at the printable edge
   M109 S{first_layer_temperature[1]} ;Wait for right hotend
   G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X244 Y-7.5 E8.80 F1200 ;Draw first right front purge line
-  G1 Z0.60 F480 ;Lift before travel to next right purge line
-  G1 X244 Y-5.5 F3600 ;Travel to second right front purge start
-  G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X156 Y-5.5 E15.84 F1200 ;Draw second right front purge line
-  G1 Z0.60 F480 ;Lift before travel to next right purge line
-  G1 X156 Y-3.5 F3600 ;Travel to third right front purge start
-  G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X244 Y-3.5 E22.88 F1200 ;Draw third right front purge line
-  G1 Z0.60 F480 ;Lift before travel to next right purge line
-  G1 X244 Y-1.5 F3600 ;Travel to fourth right front purge start
-  G1 Z0.28 F300 ;Lower to first layer purge height
-  G1 X156 Y-1.5 E29.92 F1200 ;Draw fourth right front purge line
+  G1 X244 Y-2 E8.800 F1200 ;Draw first right front purge line
+  G1 X241.5 Y0 E9.056 F1200 ;Extruding turn to second right purge line
+  G1 X136.5 Y0 E17.456 F1200 ;Draw second right front purge line
+  G1 X139 Y2 E17.712 F1200 ;Extruding turn to third right purge line
+  G1 X239 Y2 E25.712 F1200 ;Draw third right front purge line
+  G1 X236.5 Y4 E25.968 F1200 ;Extruding turn to fourth right purge line
+  G1 X141.5 Y4 E33.568 F1200 ;Draw fourth right front purge line
   G92 E0 ;Reset right extruder
   G1 E-0.8 F1200 ;Retract a bit
   G1 Z2.0 F480 ;Lift after right purge
